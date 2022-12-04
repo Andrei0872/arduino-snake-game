@@ -79,6 +79,9 @@ void loop() {
 
   activatePointOnMatrix(crtPos);
 
+  if (arePositionsEqual(crtPos, foodPos)) {
+    computeRandomFoodPosition();
+  }
 }
 
 int getDirectionFromJoystick () {
@@ -164,4 +167,8 @@ void blinkFood () {
   } else {
     deactivatePointOnMatrix(foodPos);
   }
+}
+
+bool arePositionsEqual (Position& pos1, Position& pos2) {
+  return pos1.row == pos2.row && pos1.col == pos2.col;
 }
