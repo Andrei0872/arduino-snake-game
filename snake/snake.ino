@@ -1,4 +1,6 @@
 #include "LedControl.h"
+#include <LiquidCrystal.h>
+#include <EEPROM.h>
 
 const int JOY_X_PIN = A0;
 const int JOY_Y_PIN = A1;
@@ -29,6 +31,27 @@ struct Position {
 
 const int FOOD_BLINK_INTERVAL = 250;
 
+const byte rs = 9;
+const byte en = 8;
+const byte d4 = 7;
+const byte d5 = 6;
+const byte d6 = 5;
+const byte d7 = 4;
+
+const byte lcdContrastPin = 3;
+
+LiquidCrystal lcd(rs, en, d4, d5, d6, d7);
+
+byte lcdContrast;
+
+enum ProgramState {
+  Greeting,
+  Playing,
+  Menu
+};
+
+const int GREETING_MESSAGE_TIME = 2500;
+
 /* ============================================= */
 
 bool isJoystickNeutral = true;
@@ -41,6 +64,10 @@ Directions crtDirection = -1, prevDirection;
 Position foodPos;
 bool isFoodDotActive = true;
 unsigned long foodBlinkTimestamp = millis();
+
+ProgramState crtProgramState = Greeting;
+
+unsigned long greetingMessageTimestamp = millis();
 /* ============================================= */
 
 void setup() {
@@ -52,11 +79,45 @@ void setup() {
   lc.setIntensity(0, matrixBrightness);
   lc.clearDisplay(0);
 
-  activatePointOnMatrix(crtPos);
-  computeRandomFoodPosition();
+  // activatePointOnMatrix(crtPos);
+  // computeRandomFoodPosition();
+
+  pinMode(lcdContrastPin, OUTPUT);
+  lcd.begin(16, 2);
+  lcdContrast = EEPROM.read(0); // 80
+  analogWrite(lcdContrastPin, lcdContrast);
 }
 
 void loop() {
+  switch (crtProgramState) {
+    case Greeting: {
+      showGreetingMessage();
+      break;
+    }
+    case Playing: {
+      playGame();
+      break;
+    }
+    case Menu: {
+      break;
+    }
+  }
+}
+
+void showGreetingMessage () {
+  lcd.setCursor(0, 0);
+  lcd.print("Greeting message");
+
+  if (millis() - greetingMessageTimestamp > GREETING_MESSAGE_TIME) {
+    lcd.clear();
+    
+    activatePointOnMatrix(crtPos);
+    computeRandomFoodPosition();
+    crtProgramState = Playing;
+  }
+}
+
+void playGame () {
   blinkFood();
 
   int joySwitchValue = !digitalRead(JOY_SW_PIN);
