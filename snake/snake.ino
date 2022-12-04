@@ -1,3 +1,5 @@
+#include "LedControl.h"
+
 const int JOY_X_PIN = A0;
 const int JOY_Y_PIN = A1;
 const int JOY_SW_PIN = 13;
@@ -13,17 +15,40 @@ enum Directions {
   DOWN = 3,
 };
 
+const int DIN_PIN = 12;
+const int CLOCK_PIN = 11;
+const int LOAD_PIN = 10;
+const int MATRIX_SIZE = 8;
+
+LedControl lc = LedControl(DIN_PIN, CLOCK_PIN, LOAD_PIN, 1);
+byte matrixBrightness = 2;
+
+struct Position {
+  int row, col;
+};
+
 /* ============================================= */
 
 bool isJoystickNeutral = true;
+
+// { 0, 0 } = bottom left corner.
+Position crtPos = Position { 0, 1 };
+
+/* ============================================= */
 
 void setup() {
   Serial.begin(9600);
 
   pinMode(JOY_SW_PIN, INPUT_PULLUP);
+
+  lc.shutdown(0, false);
+  lc.setIntensity(0, matrixBrightness);
+  lc.clearDisplay(0);
 }
 
 void loop() {
+  activatePointOnMatrix(crtPos);
+
   int joySwitchValue = !digitalRead(JOY_SW_PIN);
   if (joySwitchValue) {
     Serial.println("Clicked!");
@@ -69,4 +94,8 @@ int getDirectionFromJoystick () {
     isJoystickNeutral = true;
     return -1;
   }
+}
+
+void activatePointOnMatrix(Position& crtPos) {
+  lc.setLed(0, crtPos.col, crtPos.row, true);
 }
