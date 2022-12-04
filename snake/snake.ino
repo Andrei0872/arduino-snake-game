@@ -34,6 +34,8 @@ bool isJoystickNeutral = true;
 // { 0, 0 } = bottom left corner.
 Position crtPos = Position { 0, 1 };
 
+Directions crtDirection = -1, prevDirection;
+
 /* ============================================= */
 
 void setup() {
@@ -44,22 +46,30 @@ void setup() {
   lc.shutdown(0, false);
   lc.setIntensity(0, matrixBrightness);
   lc.clearDisplay(0);
+
+  activatePointOnMatrix(crtPos);
 }
 
 void loop() {
-  activatePointOnMatrix(crtPos);
-
   int joySwitchValue = !digitalRead(JOY_SW_PIN);
   if (joySwitchValue) {
     Serial.println("Clicked!");
   }
 
-  int nextDirection = getDirectionFromJoystick();
-  if (nextDirection == -1) {
+  Directions nextDirection = getDirectionFromJoystick();
+  if (crtDirection == nextDirection) {
     return;
   }
 
-  Serial.println(nextDirection);
+  deactivatePointOnMatrix(crtPos);
+
+  crtDirection = nextDirection;
+  
+  if (nextDirection != -1) {
+    computeNextPosition(nextDirection);
+  }
+
+  activatePointOnMatrix(crtPos);
 }
 
 int getDirectionFromJoystick () {
@@ -98,4 +108,32 @@ int getDirectionFromJoystick () {
 
 void activatePointOnMatrix(Position& crtPos) {
   lc.setLed(0, crtPos.col, crtPos.row, true);
+}
+
+void deactivatePointOnMatrix(Position& crtPos) {
+  lc.setLed(0, crtPos.col, crtPos.row, false);
+}
+
+void computeNextPosition (Directions& direction) {
+  switch (direction) {
+    case DOWN: {
+      crtPos.row = crtPos.row - 1 < 0 ? MATRIX_SIZE - 1 : crtPos.row - 1; 
+      break;
+    }
+    case UP: {
+      crtPos.row = crtPos.row + 1 == MATRIX_SIZE ? 0 : crtPos.row + 1;
+      break;
+    }
+    case LEFT: {
+      crtPos.col = crtPos.col - 1 < 0 ? MATRIX_SIZE - 1 : crtPos.col - 1;
+      break;
+    }
+    case RIGHT: {
+      crtPos.col = crtPos.col + 1 == MATRIX_SIZE ? 0 : crtPos.col + 1;
+      break;
+    }
+    default: {
+      return crtPos;
+    }
+  }
 }
