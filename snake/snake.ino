@@ -27,6 +27,8 @@ struct Position {
   int row, col;
 };
 
+const int FOOD_BLINK_INTERVAL = 250;
+
 /* ============================================= */
 
 bool isJoystickNeutral = true;
@@ -36,6 +38,9 @@ Position crtPos = Position { 0, 1 };
 
 Directions crtDirection = -1, prevDirection;
 
+Position foodPos;
+bool isFoodDotActive = true;
+unsigned long foodBlinkTimestamp = millis();
 /* ============================================= */
 
 void setup() {
@@ -48,9 +53,12 @@ void setup() {
   lc.clearDisplay(0);
 
   activatePointOnMatrix(crtPos);
+  computeRandomFoodPosition();
 }
 
 void loop() {
+  blinkFood();
+
   int joySwitchValue = !digitalRead(JOY_SW_PIN);
   if (joySwitchValue) {
     Serial.println("Clicked!");
@@ -70,6 +78,7 @@ void loop() {
   }
 
   activatePointOnMatrix(crtPos);
+
 }
 
 int getDirectionFromJoystick () {
@@ -135,5 +144,24 @@ void computeNextPosition (Directions& direction) {
     default: {
       return crtPos;
     }
+  }
+}
+
+void computeRandomFoodPosition () {
+  foodPos.row = random(MATRIX_SIZE);
+  foodPos.col = random(MATRIX_SIZE);
+}
+
+void blinkFood () {
+  unsigned long timePassed = millis() - foodBlinkTimestamp;
+  if (timePassed > FOOD_BLINK_INTERVAL) {
+    isFoodDotActive = !isFoodDotActive;
+    foodBlinkTimestamp = millis();
+  }
+
+  if (isFoodDotActive) {
+    activatePointOnMatrix(foodPos);
+  } else {
+    deactivatePointOnMatrix(foodPos);
   }
 }
