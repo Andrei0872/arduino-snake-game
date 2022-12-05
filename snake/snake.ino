@@ -81,6 +81,17 @@ const byte arrorwDownGlyph[8] = {
   0b00100
 };
 
+const byte arrowUpGlyph[8] = {
+  0b00100,
+  0b01110,
+  0b11111,
+  0b00100,
+  0b00100,
+  0b00100,
+  0b00100,
+  0b00100
+};
+
 /* ============================================= */
 
 bool isJoystickNeutral = true;
@@ -121,6 +132,7 @@ void setup() {
   analogWrite(lcdContrastPin, lcdContrast);
 
   lcd.createChar(0, arrorwDownGlyph);
+  lcd.createChar(1, arrowUpGlyph);
 }
 
 void loop() {
@@ -145,12 +157,18 @@ void showMenu () {
 
   lcd.setCursor(0, 0);
   lcd.print(menuItems[menuItemIdx]);
+  if (menuItemIdx > 0) {
+    lcd.setCursor(15, 0);
+    lcd.write((byte)1);
+  }
 
   lcd.setCursor(0, 1);
   lcd.print(menuItems[menuItemIdx + 1]);
 
-  lcd.setCursor(15, 1);
-  lcd.write((byte)0);
+  if (menuItemIdx < MENU_ITEMS_LENGTH - 2) {
+    lcd.setCursor(15, 1);
+    lcd.write((byte)0);
+  }
 
   int joySwitchValue = !digitalRead(JOY_SW_PIN);
   if (menuCrtSwitchValue != joySwitchValue && joySwitchValue) {
