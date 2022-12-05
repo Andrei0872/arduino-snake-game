@@ -12,9 +12,11 @@
 
 ## LCD menu
 
-- greeting message for a few seconds
+<!-- - greeting message for a few seconds -->
+<!-- - highlight currently selected option -->
+<!-- - show menu with options -->
 - Play game. on click -> start
-- make the snake move continuously in one direction
+- switch from parent menu to child menu
 - Highscore.
   - handle the case where there are no highscores: display message
   - save data in EEPROM
@@ -35,6 +37,9 @@
 
 - settings: difficulty level = snake's speed
 - add buzzer
+- make the snake move continuously in one direction
+- keep track of score
+- display the score on the LCD
 - sound: when eating food
 - sound: when losing
 - after food is eaten: grow snake

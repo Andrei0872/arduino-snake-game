@@ -92,6 +92,18 @@ const byte arrowUpGlyph[8] = {
   0b00100
 };
 
+const byte snakeGlyph[8] = {
+  0b00000,
+  0b00000,
+  0b00010,
+  0b01110,
+  0b01000,
+  0b01000,
+  0b11000,
+  0b00000
+};
+
+
 /* ============================================= */
 
 bool isJoystickNeutral = true;
@@ -110,6 +122,7 @@ ProgramState crtProgramState = Greeting;
 unsigned long greetingMessageTimestamp = millis();
 
 int menuItemIdx = 0;
+int menuSelectedItemIdx = 0;
 int menuCrtSwitchValue;
 Directions menuCrtDirection = -1;
 /* ============================================= */
@@ -133,6 +146,7 @@ void setup() {
 
   lcd.createChar(0, arrorwDownGlyph);
   lcd.createChar(1, arrowUpGlyph);
+  lcd.createChar(2, snakeGlyph);
 }
 
 void loop() {
@@ -153,22 +167,27 @@ void loop() {
 }
 
 void showMenu () {
-  lcd.clear();
-
   lcd.setCursor(0, 0);
   lcd.print(menuItems[menuItemIdx]);
+
   if (menuItemIdx > 0) {
     lcd.setCursor(15, 0);
     lcd.write((byte)1);
   }
 
-  lcd.setCursor(0, 1);
-  lcd.print(menuItems[menuItemIdx + 1]);
+  if (menuItemIdx + 1 != MENU_ITEMS_LENGTH) {
+    lcd.setCursor(0, 1);
+    lcd.print(menuItems[menuItemIdx + 1]);
+  }
 
   if (menuItemIdx < MENU_ITEMS_LENGTH - 2) {
     lcd.setCursor(15, 1);
     lcd.write((byte)0);
   }
+
+  int selectedLCDLine = menuSelectedItemIdx % 2;
+  lcd.setCursor(strlen(menuItems[menuSelectedItemIdx]), selectedLCDLine);
+  lcd.write((byte)2);
 
   int joySwitchValue = !digitalRead(JOY_SW_PIN);
   if (menuCrtSwitchValue != joySwitchValue && joySwitchValue) {
@@ -182,8 +201,17 @@ void showMenu () {
     return;
   }
 
-  menuItemIdx = nextDirection == RIGHT ? menuItemIdx + 1 : menuItemIdx - 1;
-  menuItemIdx = constrain(menuItemIdx, 0, MENU_ITEMS_LENGTH - 2);
+  menuSelectedItemIdx = nextDirection == RIGHT ? menuSelectedItemIdx + 1 : menuSelectedItemIdx - 1;
+  menuSelectedItemIdx = constrain(menuSelectedItemIdx, 0, MENU_ITEMS_LENGTH - 1);
+
+  if (nextDirection == RIGHT && menuSelectedItemIdx % 2 == 0) {
+    menuItemIdx = menuSelectedItemIdx;
+  } else if (nextDirection == LEFT && menuSelectedItemIdx % 2 == 1) {
+    menuItemIdx = menuSelectedItemIdx - 1;
+  }
+
+  menuItemIdx = constrain(menuItemIdx, 0, MENU_ITEMS_LENGTH - 1);
+  lcd.clear();
 }
 
 void showGreetingMessage () {
