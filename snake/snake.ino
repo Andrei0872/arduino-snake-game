@@ -52,6 +52,35 @@ enum ProgramState {
 
 const int GREETING_MESSAGE_TIME = 2500;
 
+const int MENU_ITEMS_LENGTH = 5;
+const int MENU_SETTINGS_INDEX = 2;
+const char* menuItems[] = {
+  "1. Play",
+  "2. Highschore",
+  "3. Settings",
+  "4. About",
+  "5. How to play"
+};
+
+const char* settingsMenuItems[] = {
+  "1. Difficulty Level",
+  "2. LCD contrast",
+  "3. LCD brightness",
+  "4. Matrix brightness",
+  "4. Sound",
+};
+
+const byte arrorwDownGlyph[8] = {
+  0b00100,
+  0b00100,
+  0b00100,
+  0b00100,
+  0b00100,
+  0b11111,
+  0b01110,
+  0b00100
+};
+
 /* ============================================= */
 
 bool isJoystickNeutral = true;
@@ -59,15 +88,19 @@ bool isJoystickNeutral = true;
 // { 0, 0 } = bottom left corner.
 Position crtPos = Position { 0, 1 };
 
-Directions crtDirection = -1, prevDirection;
+Directions crtDirection = -1;
 
-Position foodPos;
+Position foodPos; 
 bool isFoodDotActive = true;
 unsigned long foodBlinkTimestamp = millis();
 
 ProgramState crtProgramState = Greeting;
 
 unsigned long greetingMessageTimestamp = millis();
+
+int menuItemIdx = 0;
+int menuCrtSwitchValue;
+Directions menuCrtDirection = -1;
 /* ============================================= */
 
 void setup() {
@@ -86,6 +119,8 @@ void setup() {
   lcd.begin(16, 2);
   lcdContrast = EEPROM.read(0); // 80
   analogWrite(lcdContrastPin, lcdContrast);
+
+  lcd.createChar(0, arrorwDownGlyph);
 }
 
 void loop() {
@@ -99,9 +134,38 @@ void loop() {
       break;
     }
     case Menu: {
+      showMenu();
       break;
     }
   }
+}
+
+void showMenu () {
+  lcd.clear();
+
+  lcd.setCursor(0, 0);
+  lcd.print(menuItems[menuItemIdx]);
+
+  lcd.setCursor(0, 1);
+  lcd.print(menuItems[menuItemIdx + 1]);
+
+  lcd.setCursor(15, 1);
+  lcd.write((byte)0);
+
+  int joySwitchValue = !digitalRead(JOY_SW_PIN);
+  if (menuCrtSwitchValue != joySwitchValue && joySwitchValue) {
+    Serial.println("Clicked!!!!!");
+  }
+
+  menuCrtSwitchValue = joySwitchValue;
+
+  Directions nextDirection = getDirectionFromJoystick();
+  if (nextDirection == - 1 || (nextDirection != LEFT && nextDirection != RIGHT)) {
+    return;
+  }
+
+  menuItemIdx = nextDirection == RIGHT ? menuItemIdx + 1 : menuItemIdx - 1;
+  menuItemIdx = constrain(menuItemIdx, 0, MENU_ITEMS_LENGTH - 2);
 }
 
 void showGreetingMessage () {
@@ -111,9 +175,10 @@ void showGreetingMessage () {
   if (millis() - greetingMessageTimestamp > GREETING_MESSAGE_TIME) {
     lcd.clear();
     
-    activatePointOnMatrix(crtPos);
-    computeRandomFoodPosition();
-    crtProgramState = Playing;
+    // activatePointOnMatrix(crtPos);
+    // computeRandomFoodPosition();
+    crtProgramState = Menu;
+    isJoystickNeutral = true;
   }
 }
 
@@ -177,6 +242,8 @@ int getDirectionFromJoystick () {
     isJoystickNeutral = true;
     return -1;
   }
+
+  return -1;
 }
 
 void activatePointOnMatrix(Position& crtPos) {
