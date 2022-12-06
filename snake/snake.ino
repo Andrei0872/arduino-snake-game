@@ -146,9 +146,6 @@ void setup() {
   lc.setIntensity(0, matrixBrightness);
   lc.clearDisplay(0);
 
-  // activatePointOnMatrix(crtPos);
-  // computeRandomFoodPosition();
-
   pinMode(lcdContrastPin, OUTPUT);
   lcd.begin(16, 2);
   lcdContrast = EEPROM.read(0); // 80
@@ -394,6 +391,16 @@ void handleItemEnter (int itemIdx) {
           // Settings.
           Serial.println("SETTINGS");
           crtProgramState = SettingsMenu;
+
+          break;
+        }
+        case 0: {
+          // Play.
+          activatePointOnMatrix(crtPos);
+          computeRandomFoodPosition();
+          crtProgramState = Playing;
+
+          break;
         }
       }
       break;
