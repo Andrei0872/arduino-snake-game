@@ -10,6 +10,12 @@ const int JOY_RIGHT_TRESHOLD = 600;
 const int JOY_TOP_TRESHOLD = 400;
 const int JOY_BOTTOM_TRESHOLD = 600;
 
+/*
+EEPROM storage conventions:
+
+- 0-42: highscore data;
+*/
+
 enum Directions {
   LEFT = 0,
   RIGHT = 1,
@@ -114,7 +120,13 @@ const byte snakeGlyph[8] = {
   0b00000
 };
 
+const char EEPROM_DATA_SEPARATOR = ';';
 
+// The format of a row: `1. ABC: 000`. `1. ` takes up 3 bytes.
+// There are 13 bytes remaning + 1 separator for each -> 3 * 14 = 42 necessary bytes.
+const int HIGHSCORE_RECORDS = 3;
+const int BYTES_PER_HIGHSCORE_RECORD = 14;
+const int HIGHSCORE_BYTES_COUNT = HIGHSCORE_RECORDS * BYTES_PER_HIGHSCORE_RECORD;
 /* ============================================= */
 
 char highscoreList[3][16]; 
@@ -165,12 +177,35 @@ void setup() {
 
   pinMode(lcdContrastPin, OUTPUT);
   lcd.begin(16, 2);
-  lcdContrast = EEPROM.read(0); // 80
-  analogWrite(lcdContrastPin, lcdContrast);
+  // lcdContrast = EEPROM.read(0); // 80
+  analogWrite(lcdContrastPin, 80);
 
   lcd.createChar(0, arrorwDownGlyph);
   lcd.createChar(1, arrowUpGlyph);
   lcd.createChar(2, snakeGlyph);
+
+  // char hs[48] = "abc.";
+  // EEPROM.put(0, hs);
+  // char var = '*';
+  // EEPROM.put(1, var);
+
+  // char res[48];
+  // EEPROM.get(0, res);
+  // Serial.println(res);
+  // char hs[42] = "aaa:111;bbb:222;ccc:333;";
+  // char hs[42] = "aaa:111;BBB:999;ccc:333;";
+  // EEPROM.put(0, hs);
+
+  readHighscoreData(0);
+
+  Serial.println(highscoreList[0]);
+  Serial.println(highscoreList[1]);
+  Serial.println(highscoreList[2]);
+
+  // char hs[14] = "BbB:888";
+  // strcpy(highscoreList[1], hs);
+
+  // writeHighscoreData(0);
 }
 
 void loop() {
@@ -373,7 +408,6 @@ void showHowToPlaySection () {
   }
 }
 
-
 int getDirectionFromJoystick () {
   // The logic may seem odd because the joystick has been positioned
   // in a way that makes sense for the user.
@@ -533,4 +567,54 @@ void handleItemExit (int itemIdx) {
       return;
     }
   }
+}
+
+int readHighscoreData (int offset) {  
+  char highscoreData[HIGHSCORE_BYTES_COUNT];
+  EEPROM.get(offset, highscoreData);
+
+  int highscoreRecordCount = 0;
+  int highscoreRecordStartIdx = 0;
+
+  for (int i = 0; i < HIGHSCORE_BYTES_COUNT; i++) {
+    char ch = highscoreData[i];
+    if (ch == EEPROM_DATA_SEPARATOR) {
+      char* slicedStr = slice(highscoreData, highscoreRecordStartIdx, i);
+      strcpy(highscoreList[highscoreRecordCount++], slicedStr);
+
+      highscoreRecordStartIdx = i + 1;
+      free(slicedStr);
+    }
+  }
+
+  return offset + HIGHSCORE_BYTES_COUNT;
+}
+
+void writeHighscoreData (int startPos) {
+  char newHighscoreData[HIGHSCORE_BYTES_COUNT];
+
+  strcpy(newHighscoreData, "");
+
+  for (int i = 0; i < HIGHSCORE_RECORDS; i++) {
+    char* hsRecord = malloc(strlen(highscoreList[i]) + 1);
+    strcpy(hsRecord, highscoreList[i]);
+
+    strcpy(newHighscoreData + strlen(newHighscoreData), hsRecord);
+    strcpy(newHighscoreData + strlen(newHighscoreData), ";");
+  }
+
+  EEPROM.put(0, newHighscoreData);
+}
+
+char* slice (char* str, int startIdx, int endIdx) {
+  int len = endIdx - startIdx;
+  char *res = malloc(len);
+
+  for (int i = startIdx; i < endIdx; i++) {
+    res[i - startIdx] = str[i];
+  }
+
+  res[len] = '\0';
+
+  return res;
 }

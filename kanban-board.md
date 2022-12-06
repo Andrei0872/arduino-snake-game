@@ -19,8 +19,9 @@
 <!-- - switch from parent menu to child menu -->
 - Highscore.
   <!-- - handle the case where there are no highscores: display message -->
-  - save data in EEPROM
+  <!-- - save data in EEPROM
   - read data from EEPROM
+  - update certain highscore -->
   - update(if needed) after game is done
 - Settings:
   - difficulty level(i.e. snake's speed)
