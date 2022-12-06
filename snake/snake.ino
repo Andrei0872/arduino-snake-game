@@ -124,7 +124,12 @@ unsigned long greetingMessageTimestamp = millis();
 int menuItemIdx = 0;
 int menuSelectedItemIdx = 0;
 int menuCrtSwitchValue;
-Directions menuCrtDirection = -1;
+int* menuItemIdxPtr;
+int* menuSelectedItemIdxPtr;
+
+int mainMenuItemIdx = 0;
+int mainMenuSelectedItemIdx = 0;
+
 /* ============================================= */
 
 void setup() {
@@ -160,13 +165,20 @@ void loop() {
       break;
     }
     case Menu: {
-      showMenu();
+      menuItemIdxPtr = &mainMenuItemIdx;
+      menuSelectedItemIdxPtr = &mainMenuSelectedItemIdx;
+
+      
+      showMenu(menuItems, MENU_ITEMS_LENGTH);
       break;
     }
   }
 }
 
-void showMenu () {
+void showMenu (const char* menuItems[], int menuItemsLength) {
+  menuItemIdx = *menuItemIdxPtr;
+  menuSelectedItemIdx = *menuSelectedItemIdxPtr;
+
   lcd.setCursor(0, 0);
   lcd.print(menuItems[menuItemIdx]);
 
@@ -175,12 +187,12 @@ void showMenu () {
     lcd.write((byte)1);
   }
 
-  if (menuItemIdx + 1 != MENU_ITEMS_LENGTH) {
+  if (menuItemIdx + 1 != menuItemsLength) {
     lcd.setCursor(0, 1);
     lcd.print(menuItems[menuItemIdx + 1]);
   }
 
-  if (menuItemIdx < MENU_ITEMS_LENGTH - 2) {
+  if (menuItemIdx < menuItemsLength - 2) {
     lcd.setCursor(15, 1);
     lcd.write((byte)0);
   }
@@ -200,9 +212,10 @@ void showMenu () {
   if (nextDirection == - 1 || (nextDirection != LEFT && nextDirection != RIGHT)) {
     return;
   }
+  Serial.println(nextDirection);
 
   menuSelectedItemIdx = nextDirection == RIGHT ? menuSelectedItemIdx + 1 : menuSelectedItemIdx - 1;
-  menuSelectedItemIdx = constrain(menuSelectedItemIdx, 0, MENU_ITEMS_LENGTH - 1);
+  menuSelectedItemIdx = constrain(menuSelectedItemIdx, 0, menuItemsLength - 1);
 
   if (nextDirection == RIGHT && menuSelectedItemIdx % 2 == 0) {
     menuItemIdx = menuSelectedItemIdx;
@@ -210,8 +223,11 @@ void showMenu () {
     menuItemIdx = menuSelectedItemIdx - 1;
   }
 
-  menuItemIdx = constrain(menuItemIdx, 0, MENU_ITEMS_LENGTH - 1);
+  menuItemIdx = constrain(menuItemIdx, 0, menuItemsLength - 1);
   lcd.clear();
+
+  *menuItemIdxPtr = menuItemIdx;
+  *menuSelectedItemIdxPtr = menuSelectedItemIdx;
 }
 
 void showGreetingMessage () {
