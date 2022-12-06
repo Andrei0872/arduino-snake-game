@@ -50,6 +50,7 @@ enum ProgramState {
   Menu,
   SettingsMenu,
   HighscoreMenu,
+  About,
 };
 
 const int GREETING_MESSAGE_TIME = 2500;
@@ -71,6 +72,12 @@ const char* settingsMenuItems[] = {
   "3. LCD brightness",
   "4. Matrix brightness",
   "5. Sound",
+};
+
+const int ABOUT_ITEMS_LENGTH = 2;
+const char* aboutItems[] = {
+  "Andrei Gatej",
+  "andreigatej.dev"
 };
 
 const byte arrorwDownGlyph[8] = {
@@ -132,11 +139,17 @@ int menuCrtSwitchValue;
 int* menuItemIdxPtr;
 int* menuSelectedItemIdxPtr;
 
+// Main menu.
 int mainMenuItemIdx = 0;
 int mainMenuSelectedItemIdx = 0;
 
+// Settings menu.
 int settingsMenuItemIdx = 0;
 int settingsMenuSelectedItemIdx = 0;
+
+// About items.
+int aboutItemIdx = 0;
+int aboutSelectedItemIdx = 0;
 
 /* ============================================= */
 
@@ -186,6 +199,11 @@ void loop() {
     }
     case HighscoreMenu: {
       showHighscoreMenu();
+      break;
+    }
+    case About: {
+      showAboutSection();
+
       break;
     }
   }
@@ -323,6 +341,21 @@ void showHighscoreMenu () {
   // showMenu(settingsMenuItems, SETTINGS_MENU_ITEMS_LENGTH);
 }
 
+void showAboutSection () {
+  lcd.setCursor(2, 0);
+  lcd.print(aboutItems[0]);
+
+  lcd.setCursor(0, 1);
+  lcd.print(aboutItems[1]);
+
+  Directions nextDirection = getDirectionFromJoystick();
+  if (nextDirection != -1 && nextDirection == UP) {
+    handleItemExit(menuSelectedItemIdx);
+    lcd.clear();
+    return;
+  }
+}
+
 int getDirectionFromJoystick () {
   // The logic may seem odd because the joystick has been positioned
   // in a way that makes sense for the user.
@@ -439,6 +472,12 @@ void handleItemEnter (int itemIdx) {
 
           break;
         }
+        case 3: {
+          // About.
+          crtProgramState = About;
+
+          break;
+        }
       }
       break;
     }
@@ -456,6 +495,10 @@ void handleItemExit (int itemIdx) {
       break;
     }
     case HighscoreMenu: {
+      crtProgramState = Menu;
+      break;
+    }
+    case About: {
       crtProgramState = Menu;
       break;
     }

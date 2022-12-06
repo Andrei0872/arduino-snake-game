@@ -15,11 +15,12 @@
 <!-- - greeting message for a few seconds -->
 <!-- - highlight currently selected option -->
 <!-- - show menu with options -->
-- Play game. on click -> start
-- switch from parent menu to child menu
+<!-- - Play game. on enter -> start -->
+<!-- - switch from parent menu to child menu -->
 - Highscore.
-  - handle the case where there are no highscores: display message
+  <!-- - handle the case where there are no highscores: display message -->
   - save data in EEPROM
+  - read data from EEPROM
   - update(if needed) after game is done
 - Settings:
   - difficulty level(i.e. snake's speed)
@@ -28,8 +29,13 @@
   - Matrix brightness. save in EEPROM
   - Sounds on or off. save in EEPROM
   **note**: you can use something similar to a range input
-- About: name + GH link
+<!-- - About: name + GH link -->
 - How to play: it's snake, it doesn't need further explications
+
+<!-- switch from parent menu to child menu: -->
+<!-- - refactor `showMenu` so that it accepts params(i.e. becomes reusable) -->
+<!-- - onClick: switch form parent to child -->
+<!-- - onClick: switch form child to parent -->
 
 ---
 
