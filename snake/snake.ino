@@ -49,6 +49,7 @@ enum ProgramState {
   Playing,
   Menu,
   SettingsMenu,
+  HighscoreMenu,
 };
 
 const int GREETING_MESSAGE_TIME = 2500;
@@ -57,7 +58,7 @@ const int MENU_ITEMS_LENGTH = 5;
 const int MENU_SETTINGS_INDEX = 2;
 const char* menuItems[] = {
   "1. Play",
-  "2. Highschore",
+  "2. Highscore",
   "3. Settings",
   "4. About",
   "5. How to play"
@@ -107,6 +108,8 @@ const byte snakeGlyph[8] = {
 
 
 /* ============================================= */
+
+char highscoreList[3][16]; 
 
 bool isJoystickNeutral = true;
 
@@ -179,6 +182,10 @@ void loop() {
       
       showMenu(settingsMenuItems, SETTINGS_MENU_ITEMS_LENGTH);
       
+      break;
+    }
+    case HighscoreMenu: {
+      showHighscoreMenu();
       break;
     }
   }
@@ -292,6 +299,30 @@ void playGame () {
   }
 }
 
+void showHighscoreMenu () {
+  if (!strlen(highscoreList[0])) {
+    lcd.setCursor(2, 0);
+    lcd.print("Nothing here");
+
+    lcd.setCursor(5, 1);
+    lcd.print("yet :(");
+
+    Directions nextDirection = getDirectionFromJoystick();
+    if (nextDirection != -1 && nextDirection == UP) {
+      handleItemExit(menuSelectedItemIdx);
+      lcd.clear();
+      return;
+    }
+    
+    return;
+  }
+  
+  // menuItemIdxPtr = &settingsMenuItemIdx;
+  // menuSelectedItemIdxPtr = &settingsMenuSelectedItemIdx;
+    
+  // showMenu(settingsMenuItems, SETTINGS_MENU_ITEMS_LENGTH);
+}
+
 int getDirectionFromJoystick () {
   // The logic may seem odd because the joystick has been positioned
   // in a way that makes sense for the user.
@@ -402,6 +433,12 @@ void handleItemEnter (int itemIdx) {
 
           break;
         }
+        case 1: {
+          // HighScore.
+          crtProgramState = HighscoreMenu;
+
+          break;
+        }
       }
       break;
     }
@@ -415,6 +452,10 @@ void handleItemEnter (int itemIdx) {
 void handleItemExit (int itemIdx) {
   switch (crtProgramState) {
     case SettingsMenu: {
+      crtProgramState = Menu;
+      break;
+    }
+    case HighscoreMenu: {
       crtProgramState = Menu;
       break;
     }
