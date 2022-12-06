@@ -30,7 +30,7 @@
   - Sounds on or off. save in EEPROM
   **note**: you can use something similar to a range input
 <!-- - About: name + GH link -->
-- How to play: it's snake, it doesn't need further explications
+<!-- - How to play: it's snake, it doesn't need further explications -->
 
 <!-- switch from parent menu to child menu: -->
 <!-- - refactor `showMenu` so that it accepts params(i.e. becomes reusable) -->

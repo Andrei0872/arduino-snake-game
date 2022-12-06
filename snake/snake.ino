@@ -51,6 +51,7 @@ enum ProgramState {
   SettingsMenu,
   HighscoreMenu,
   About,
+  HowToPlay,
 };
 
 const int GREETING_MESSAGE_TIME = 2500;
@@ -206,6 +207,10 @@ void loop() {
 
       break;
     }
+    case HowToPlay: {
+      showHowToPlaySection();
+      break;
+    }
   }
 }
 
@@ -356,6 +361,19 @@ void showAboutSection () {
   }
 }
 
+void showHowToPlaySection () {
+  lcd.setCursor(3, 0);
+  lcd.print("It's snake");
+
+  Directions nextDirection = getDirectionFromJoystick();
+  if (nextDirection != -1 && nextDirection == UP) {
+    handleItemExit(menuSelectedItemIdx);
+    lcd.clear();
+    return;
+  }
+}
+
+
 int getDirectionFromJoystick () {
   // The logic may seem odd because the joystick has been positioned
   // in a way that makes sense for the user.
@@ -478,6 +496,10 @@ void handleItemEnter (int itemIdx) {
 
           break;
         }
+        case 4: {
+          // How to play.
+          crtProgramState = HowToPlay;
+        }
       }
       break;
     }
@@ -499,6 +521,10 @@ void handleItemExit (int itemIdx) {
       break;
     }
     case About: {
+      crtProgramState = Menu;
+      break;
+    }
+    case HowToPlay: {
       crtProgramState = Menu;
       break;
     }
