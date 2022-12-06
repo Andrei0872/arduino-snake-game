@@ -47,7 +47,8 @@ byte lcdContrast;
 enum ProgramState {
   Greeting,
   Playing,
-  Menu
+  Menu,
+  SettingsMenu,
 };
 
 const int GREETING_MESSAGE_TIME = 2500;
@@ -62,12 +63,13 @@ const char* menuItems[] = {
   "5. How to play"
 };
 
+const int SETTINGS_MENU_ITEMS_LENGTH = 5;
 const char* settingsMenuItems[] = {
   "1. Difficulty Level",
   "2. LCD contrast",
   "3. LCD brightness",
   "4. Matrix brightness",
-  "4. Sound",
+  "5. Sound",
 };
 
 const byte arrorwDownGlyph[8] = {
@@ -130,6 +132,9 @@ int* menuSelectedItemIdxPtr;
 int mainMenuItemIdx = 0;
 int mainMenuSelectedItemIdx = 0;
 
+int settingsMenuItemIdx = 0;
+int settingsMenuSelectedItemIdx = 0;
+
 /* ============================================= */
 
 void setup() {
@@ -167,9 +172,16 @@ void loop() {
     case Menu: {
       menuItemIdxPtr = &mainMenuItemIdx;
       menuSelectedItemIdxPtr = &mainMenuSelectedItemIdx;
-
       
       showMenu(menuItems, MENU_ITEMS_LENGTH);
+      break;
+    }
+    case SettingsMenu: {
+      menuItemIdxPtr = &settingsMenuItemIdx;
+      menuSelectedItemIdxPtr = &settingsMenuSelectedItemIdx;
+      
+      showMenu(settingsMenuItems, SETTINGS_MENU_ITEMS_LENGTH);
+      
       break;
     }
   }
@@ -209,10 +221,21 @@ void showMenu (const char* menuItems[], int menuItemsLength) {
   menuCrtSwitchValue = joySwitchValue;
 
   Directions nextDirection = getDirectionFromJoystick();
+  if (nextDirection != -1 && nextDirection == DOWN) {
+    handleItemEnter(menuSelectedItemIdx);
+    lcd.clear();
+    return;
+  }
+
+  if (nextDirection != -1 && nextDirection == UP) {
+    handleItemExit(menuSelectedItemIdx);
+    lcd.clear();
+    return;
+  }
+  
   if (nextDirection == - 1 || (nextDirection != LEFT && nextDirection != RIGHT)) {
     return;
   }
-  Serial.println(nextDirection);
 
   menuSelectedItemIdx = nextDirection == RIGHT ? menuSelectedItemIdx + 1 : menuSelectedItemIdx - 1;
   menuSelectedItemIdx = constrain(menuSelectedItemIdx, 0, menuItemsLength - 1);
@@ -361,4 +384,36 @@ void blinkFood () {
 
 bool arePositionsEqual (Position& pos1, Position& pos2) {
   return pos1.row == pos2.row && pos1.col == pos2.col;
+}
+
+void handleItemEnter (int itemIdx) {
+  switch (crtProgramState) {
+    case Menu: {
+      switch (itemIdx) {
+        case 2: {
+          // Settings.
+          Serial.println("SETTINGS");
+          crtProgramState = SettingsMenu;
+        }
+      }
+      break;
+    }
+
+    default: {
+      return;
+    }
+  }
+}
+
+void handleItemExit (int itemIdx) {
+  switch (crtProgramState) {
+    case SettingsMenu: {
+      crtProgramState = Menu;
+      break;
+    }
+
+    default: {
+      return;
+    }
+  }
 }
