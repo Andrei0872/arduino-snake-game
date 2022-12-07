@@ -29,7 +29,7 @@
   <!-- - LCD contrast. save in EEPROM - 0-255 -->
   <!-- - LCD brightness. save in EEPROM - 0-255; -->
     <!-- - connect to PWM pin(e.g. 6) -->
-  - Matrix brightness. save in EEPROM - 0-15
+  <!-- - Matrix brightness. save in EEPROM - 0-15 -->
   - Sounds on or off. save in EEPROM
   <!-- **note**: you can use something similar to a range input -->
 <!-- - About: name + GH link -->

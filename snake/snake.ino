@@ -22,11 +22,12 @@ struct Highscore {
 const int SETTINGS_START_OFFSET = HIGHSCORE_START_OFFSET + sizeof(Highscore);
 const int DEFAULT_LCD_CONTRAST_VALUE = 120;
 const int DEFAULT_LCD_BRIGHTNESS_VALUE = 110;
+const int DEFAULT_MATRIX_BRIGHTNESS_VALUE = 5;
 struct Settings {
   byte difficultyLevel;
   byte LCDContrast = DEFAULT_LCD_CONTRAST_VALUE;
   byte LCDBrightness = DEFAULT_LCD_BRIGHTNESS_VALUE;
-  byte matrixBrightness;
+  byte matrixBrightness = DEFAULT_MATRIX_BRIGHTNESS_VALUE;
   bool hasSoundsOn;
 } settingsData;
 
@@ -76,6 +77,7 @@ enum ProgramState {
   HowToPlay,
   SettingLCDContrast,
   SettingLCDBrightness,
+  SettingMatrixrightness,
 };
 
 const int GREETING_MESSAGE_TIME = 2500;
@@ -152,6 +154,7 @@ const int HIGHSCORE_RECORDS = 3;
 
 const int LCD_CONTRAST_RANGE_STEP = 255 / 16;
 const int LCD_BRIGHTNESS_RANGE_STEP = 255 / 16;
+const int MATRIX_BRIGHTNESS_RANGE_STEP = 1;
 
 /* ============================================= */
 
@@ -203,7 +206,7 @@ void setup() {
   pinMode(JOY_SW_PIN, INPUT_PULLUP);
 
   lc.shutdown(0, false);
-  lc.setIntensity(0, 2);
+  // lc.setIntensity(0, 2);
   lc.clearDisplay(0);
 
   pinMode(lcdContrastPin, OUTPUT);
@@ -232,12 +235,14 @@ void setup() {
   // Serial.println(settingsData.LCDBrightness);
   settingsData.LCDContrast = !!settingsData.LCDContrast ? settingsData.LCDContrast : DEFAULT_LCD_CONTRAST_VALUE;
   settingsData.LCDBrightness = !!settingsData.LCDBrightness ? settingsData.LCDBrightness : DEFAULT_LCD_BRIGHTNESS_VALUE;
+  settingsData.matrixBrightness = !!settingsData.matrixBrightness ? settingsData.matrixBrightness : DEFAULT_MATRIX_BRIGHTNESS_VALUE;
 
   // Serial.println(settingsData.LCDContrast);
   // Serial.println(settingsData.LCDBrightness);
 
   analogWrite(lcdContrastPin, settingsData.LCDContrast);
   analogWrite(LCD_BRIGHTNESS_PIN, settingsData.LCDBrightness);
+  lc.setIntensity(0, settingsData.matrixBrightness);
 
   // Serial.println(highscoreData.first);
   // Serial.println(highscoreData.second);
@@ -247,6 +252,8 @@ void setup() {
   // strcpy(highscoreData.second, "bbb:7777");
 
   // writeDataToStorage(HIGHSCORE_START_OFFSET, highscoreData);
+
+  // toggleAllMatrixPoints(true);
 }
 
 void loop() {
@@ -297,6 +304,13 @@ void loop() {
       showLCDBrightnessSettingView();
       break;
     }
+    case SettingMatrixrightness: {
+      rangeValue = rangeValue != -1 ? rangeValue : settingsData.matrixBrightness;
+      // TODO: might not need to do this on every iteration.
+      toggleAllMatrixPoints(true);
+      showMatrixBrightnessSettingView();
+      break;
+    }
   }
 }
 
@@ -328,12 +342,12 @@ void showMenu (const char* menuItems[], int menuItemsLength) {
 
   // return;
 
-  int joySwitchValue = !digitalRead(JOY_SW_PIN);
-  if (menuCrtSwitchValue != joySwitchValue && joySwitchValue) {
-    Serial.println("Clicked!!!!!");
-  }
+  // int joySwitchValue = !digitalRead(JOY_SW_PIN);
+  // if (menuCrtSwitchValue != joySwitchValue && joySwitchValue) {
+  //   // Serial.println("Clicked!!!!!");
+  // }
 
-  menuCrtSwitchValue = joySwitchValue;
+  // menuCrtSwitchValue = joySwitchValue;
 
   Directions nextDirection = getDirectionFromJoystick();
   // Serial.println(nextDirection);
@@ -388,7 +402,7 @@ void playGame () {
 
   int joySwitchValue = !digitalRead(JOY_SW_PIN);
   if (joySwitchValue) {
-    Serial.println("Clicked!");
+    // Serial.println("Clicked!");
   }
 
   Directions nextDirection = getDirectionFromJoystick();
@@ -565,7 +579,6 @@ void handleItemEnter (int itemIdx) {
       switch (itemIdx) {
         case 2: {
           // Settings.
-          Serial.println("SETTINGS");
           crtProgramState = SettingsMenu;
 
           break;
@@ -612,6 +625,12 @@ void handleItemEnter (int itemIdx) {
 
           break;
         }
+        case 3: {
+          // Matrix Brightness.
+          crtProgramState = SettingMatrixrightness;
+
+          break;
+        }
       }
       
       break;
@@ -642,7 +661,8 @@ void handleItemExit (int itemIdx) {
       break;
     }
     case SettingLCDContrast:
-    case SettingLCDBrightness: {
+    case SettingLCDBrightness:
+    case SettingMatrixrightness: {
       crtProgramState = SettingsMenu;
       break;
     }
@@ -738,5 +758,50 @@ void showLCDBrightnessSettingView () {
 
     shouldRenderRangeSettingPixels = true;
     return;    
+  }
+}
+
+void showMatrixBrightnessSettingView () {
+  if (shouldRenderRangeSettingPixels) {
+    lcd.clear();
+    lcd.print("Matrix Brightness");
+
+    int filledBars = rangeValue;
+    lc.setIntensity(0, rangeValue);
+
+    displayRange(filledBars);
+    shouldRenderRangeSettingPixels = false;
+  }
+
+  Directions nextDirection = getDirectionFromJoystick();
+  if (nextDirection != -1 && nextDirection == UP) {
+    handleItemExit(menuSelectedItemIdx);
+    lcd.clear();
+
+    settingsData.matrixBrightness = rangeValue;
+    writeDataToStorage(SETTINGS_START_OFFSET, settingsData);
+
+    rangeValue = -1;
+
+    toggleAllMatrixPoints(false);
+
+    shouldRenderRangeSettingPixels = true;
+    return;
+  }
+
+  if (nextDirection != -1 && (nextDirection == RIGHT || nextDirection == LEFT)) {
+    rangeValue += nextDirection == RIGHT ? MATRIX_BRIGHTNESS_RANGE_STEP : -MATRIX_BRIGHTNESS_RANGE_STEP;
+    rangeValue = constrain(rangeValue, 0, 16);
+
+    shouldRenderRangeSettingPixels = true;
+    return;    
+  }
+}
+
+void toggleAllMatrixPoints (bool shouldActivate) {
+  for (int i = 0; i < MATRIX_SIZE; i++) {
+    for (int j = 0; j < MATRIX_SIZE; j++) {
+      lc.setLed(0, j, i, shouldActivate);
+    }
   }
 }
