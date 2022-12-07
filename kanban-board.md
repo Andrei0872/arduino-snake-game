@@ -42,7 +42,10 @@
 
 <!-- 1. refactor: use struct instead of separated string -->
 <!-- 2. control LCD brightness(connect to PWM pin, e.g. 6) -->
-3. generic input range component(function)
+<!-- 3. generic input range component(function) -->
+
+refactor: `lcd.print` only when needed, not on every loop iteration
+perf: make read & write fns to storage generic
 
 ---
 

@@ -68,6 +68,7 @@ enum ProgramState {
   HighscoreMenu,
   About,
   HowToPlay,
+  SettingLCDContrast,
 };
 
 const int GREETING_MESSAGE_TIME = 2500;
@@ -130,7 +131,19 @@ const byte snakeGlyph[8] = {
   0b00000
 };
 
+const byte barGlyph[8] = {
+  B11111,
+  B11111,
+  B11111,
+  B11111,
+  B11111,
+  B11111,
+  B11111,
+};
+
 const int HIGHSCORE_RECORDS = 3;
+
+const int DEFAULT_LCD_CONSTRAST_VALUE = 120;
 /* ============================================= */
 
 bool isJoystickNeutral = true;
@@ -170,6 +183,9 @@ int aboutSelectedItemIdx = 0;
 int highscoreItemIdx = 0;
 int highscoreSelectedItemIdx = 0;
 
+int rangeValue = -1;
+bool shouldRenderRangeSettingPixels = true;
+
 /* ============================================= */
 
 void setup() {
@@ -184,7 +200,7 @@ void setup() {
   pinMode(lcdContrastPin, OUTPUT);
   lcd.begin(16, 2);
   // lcdContrast = EEPROM.read(0); // 80
-  analogWrite(lcdContrastPin, 120);
+  analogWrite(lcdContrastPin, DEFAULT_LCD_CONSTRAST_VALUE);
   analogWrite(LCD_BRIGHTNESS_PIN, 110);
   // lcd.print("foobar!");
   // for (int i = 0; i < 255; i += 2) {
@@ -199,6 +215,7 @@ void setup() {
   lcd.createChar(0, arrorwDownGlyph);
   lcd.createChar(1, arrowUpGlyph);
   lcd.createChar(2, snakeGlyph);
+  lcd.createChar(3, barGlyph);
 
   int nextOffset = readHighscoreData(0);
 
@@ -252,6 +269,11 @@ void loop() {
       showHowToPlaySection();
       break;
     }
+    case SettingLCDContrast: {
+      rangeValue = rangeValue != -1 ? rangeValue : DEFAULT_LCD_CONSTRAST_VALUE;
+      showLCDContrastSettingView();
+      break;
+    }
   }
 }
 
@@ -281,6 +303,8 @@ void showMenu (const char* menuItems[], int menuItemsLength) {
   lcd.setCursor(strlen(menuItems[menuSelectedItemIdx]), selectedLCDLine);
   lcd.write((byte)2);
 
+  // return;
+
   int joySwitchValue = !digitalRead(JOY_SW_PIN);
   if (menuCrtSwitchValue != joySwitchValue && joySwitchValue) {
     Serial.println("Clicked!!!!!");
@@ -289,6 +313,7 @@ void showMenu (const char* menuItems[], int menuItemsLength) {
   menuCrtSwitchValue = joySwitchValue;
 
   Directions nextDirection = getDirectionFromJoystick();
+  // Serial.println(nextDirection);
   if (nextDirection != -1 && nextDirection == DOWN) {
     handleItemEnter(menuSelectedItemIdx);
     lcd.clear();
@@ -549,6 +574,15 @@ void handleItemEnter (int itemIdx) {
       }
       break;
     }
+    
+    case SettingsMenu: {
+      case SettingLCDContrast: {
+          crtProgramState = SettingLCDContrast;
+
+        break;
+      }
+      break;
+    }
 
     default: {
       return;
@@ -574,6 +608,10 @@ void handleItemExit (int itemIdx) {
       crtProgramState = Menu;
       break;
     }
+    case SettingLCDContrast: {
+      crtProgramState = SettingsMenu;
+      break;
+    }
 
     default: {
       return;
@@ -581,29 +619,54 @@ void handleItemExit (int itemIdx) {
   }
 }
 
+// TODO: make these generic ?
 int readHighscoreData (int offset) {  
   EEPROM.get(offset, highscoreData);
-  // Serial.println(highscoreData.first);
-  // Serial.println(highscoreData.second);
-  // Serial.println(highscoreData.third);
 
   return offset + sizeof(highscoreData);
 }
-
 int writeHighscoreData (int offset) {
   EEPROM.put(0, highscoreData);
+
   return offset + sizeof(highscoreData);
 }
 
-char* slice (char* str, int startIdx, int endIdx) {
-  int len = endIdx - startIdx;
-  char *res = malloc(len);
+void displayRange (int filledBars) {
+  for (int i = 0; i < filledBars; i++) {
+    lcd.setCursor(i, 1);
+    lcd.write((byte)3);
+  }
+}
 
-  for (int i = startIdx; i < endIdx; i++) {
-    res[i - startIdx] = str[i];
+const int LCD_CONSTRAST_RANGE_STEP = 255 / 16;
+void showLCDContrastSettingView () {
+  if (shouldRenderRangeSettingPixels) {
+    lcd.clear();
+    lcd.print("LCD Contrast");
+
+    Serial.print("RANGE VALUE: ");
+    Serial.println(LCD_CONSTRAST_RANGE_STEP);
+
+    int filledBars = map(rangeValue, 0, 255, 0, 16);
+    analogWrite(lcdContrastPin, rangeValue);
+
+    displayRange(filledBars);
+    shouldRenderRangeSettingPixels = false;
   }
 
-  res[len] = '\0';
+  Directions nextDirection = getDirectionFromJoystick();
+  if (nextDirection != -1 && nextDirection == UP) {
+    handleItemExit(menuSelectedItemIdx);
+    lcd.clear();
+    shouldRenderRangeSettingPixels = true;
+    return;
+  }
 
-  return res;
+  if (nextDirection != -1 && (nextDirection == RIGHT || nextDirection == LEFT)) {
+    rangeValue += nextDirection == RIGHT ? LCD_CONSTRAST_RANGE_STEP : -LCD_CONSTRAST_RANGE_STEP;
+    rangeValue = constrain(rangeValue, 0, 255);
+
+    shouldRenderRangeSettingPixels = true;
+    return;    
+  }
 }
