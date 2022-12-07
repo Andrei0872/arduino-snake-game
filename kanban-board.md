@@ -27,11 +27,11 @@
 - Settings:
   - difficulty level(i.e. snake's speed)
   <!-- - LCD contrast. save in EEPROM - 0-255 -->
-  - LCD brightness. save in EEPROM - 0-255;
+  <!-- - LCD brightness. save in EEPROM - 0-255; -->
     <!-- - connect to PWM pin(e.g. 6) -->
   - Matrix brightness. save in EEPROM - 0-15
   - Sounds on or off. save in EEPROM
-  **note**: you can use something similar to a range input
+  <!-- **note**: you can use something similar to a range input -->
 <!-- - About: name + GH link -->
 <!-- - How to play: it's snake, it doesn't need further explications -->
 
@@ -73,3 +73,4 @@ refactor: `lcd.print` only when needed, not on every loop iteration
 - fix: perturbation joystick(i.e. use debounce)
 - fix(food): always random when starting the game; the crt problem is that the food is always spawned in the same spot
 - fix: ensure the random food point is not spawned in an occupied position
+- refactor: clean code, constants, comments, cruft, simplify switch cases statements etc.

@@ -20,11 +20,12 @@ struct Highscore {
 } highscoreData;
 
 const int SETTINGS_START_OFFSET = HIGHSCORE_START_OFFSET + sizeof(Highscore);
-const int DEFAULT_LCD_CONSTRAST_VALUE = 120;
+const int DEFAULT_LCD_CONTRAST_VALUE = 120;
+const int DEFAULT_LCD_BRIGHTNESS_VALUE = 110;
 struct Settings {
   byte difficultyLevel;
-  byte LCDContrast = DEFAULT_LCD_CONSTRAST_VALUE;
-  byte LCDBrightness;
+  byte LCDContrast = DEFAULT_LCD_CONTRAST_VALUE;
+  byte LCDBrightness = DEFAULT_LCD_BRIGHTNESS_VALUE;
   byte matrixBrightness;
   bool hasSoundsOn;
 } settingsData;
@@ -74,6 +75,7 @@ enum ProgramState {
   About,
   HowToPlay,
   SettingLCDContrast,
+  SettingLCDBrightness,
 };
 
 const int GREETING_MESSAGE_TIME = 2500;
@@ -148,6 +150,9 @@ const byte barGlyph[8] = {
 
 const int HIGHSCORE_RECORDS = 3;
 
+const int LCD_CONTRAST_RANGE_STEP = 255 / 16;
+const int LCD_BRIGHTNESS_RANGE_STEP = 255 / 16;
+
 /* ============================================= */
 
 bool isJoystickNeutral = true;
@@ -202,9 +207,10 @@ void setup() {
   lc.clearDisplay(0);
 
   pinMode(lcdContrastPin, OUTPUT);
+  pinMode(LCD_BRIGHTNESS_PIN, OUTPUT);
   lcd.begin(16, 2);
   // lcdContrast = EEPROM.read(0); // 80
-  analogWrite(LCD_BRIGHTNESS_PIN, 110);
+  // analogWrite(LCD_BRIGHTNESS_PIN, 110);
   // lcd.print("foobar!");
   // for (int i = 0; i < 255; i += 2) {
   //   analogWrite(lcdContrastPin, i);
@@ -223,9 +229,15 @@ void setup() {
   readDataFromStorage(HIGHSCORE_START_OFFSET, highscoreData);
   readDataFromStorage(SETTINGS_START_OFFSET, settingsData);
 
-  Serial.println(settingsData.LCDContrast);
+  // Serial.println(settingsData.LCDBrightness);
+  settingsData.LCDContrast = !!settingsData.LCDContrast ? settingsData.LCDContrast : DEFAULT_LCD_CONTRAST_VALUE;
+  settingsData.LCDBrightness = !!settingsData.LCDBrightness ? settingsData.LCDBrightness : DEFAULT_LCD_BRIGHTNESS_VALUE;
+
+  // Serial.println(settingsData.LCDContrast);
+  // Serial.println(settingsData.LCDBrightness);
 
   analogWrite(lcdContrastPin, settingsData.LCDContrast);
+  analogWrite(LCD_BRIGHTNESS_PIN, settingsData.LCDBrightness);
 
   // Serial.println(highscoreData.first);
   // Serial.println(highscoreData.second);
@@ -278,6 +290,11 @@ void loop() {
     case SettingLCDContrast: {
       rangeValue = rangeValue != -1 ? rangeValue : settingsData.LCDContrast;
       showLCDContrastSettingView();
+      break;
+    }
+    case SettingLCDBrightness: {
+      rangeValue = rangeValue != -1 ? rangeValue : settingsData.LCDBrightness;
+      showLCDBrightnessSettingView();
       break;
     }
   }
@@ -582,11 +599,21 @@ void handleItemEnter (int itemIdx) {
     }
     
     case SettingsMenu: {
-      case SettingLCDContrast: {
+      switch (itemIdx) {
+        case 1: {
+          // LCD Contrast.
           crtProgramState = SettingLCDContrast;
 
-        break;
+          break;
+        }
+        case 2: {
+          // LCD Brightness.
+          crtProgramState = SettingLCDBrightness;
+
+          break;
+        }
       }
+      
       break;
     }
 
@@ -614,7 +641,8 @@ void handleItemExit (int itemIdx) {
       crtProgramState = Menu;
       break;
     }
-    case SettingLCDContrast: {
+    case SettingLCDContrast:
+    case SettingLCDBrightness: {
       crtProgramState = SettingsMenu;
       break;
     }
@@ -643,14 +671,10 @@ void displayRange (int filledBars) {
   }
 }
 
-const int LCD_CONSTRAST_RANGE_STEP = 255 / 16;
 void showLCDContrastSettingView () {
   if (shouldRenderRangeSettingPixels) {
     lcd.clear();
     lcd.print("LCD Contrast");
-
-    Serial.print("RANGE VALUE: ");
-    Serial.println(LCD_CONSTRAST_RANGE_STEP);
 
     int filledBars = map(rangeValue, 0, 255, 0, 16);
     analogWrite(lcdContrastPin, rangeValue);
@@ -667,12 +691,49 @@ void showLCDContrastSettingView () {
     settingsData.LCDContrast = rangeValue;
     writeDataToStorage(SETTINGS_START_OFFSET, settingsData);
 
+    rangeValue = -1;
+
     shouldRenderRangeSettingPixels = true;
     return;
   }
 
   if (nextDirection != -1 && (nextDirection == RIGHT || nextDirection == LEFT)) {
-    rangeValue += nextDirection == RIGHT ? LCD_CONSTRAST_RANGE_STEP : -LCD_CONSTRAST_RANGE_STEP;
+    rangeValue += nextDirection == RIGHT ? LCD_CONTRAST_RANGE_STEP : -LCD_CONTRAST_RANGE_STEP;
+    rangeValue = constrain(rangeValue, 0, 255);
+
+    shouldRenderRangeSettingPixels = true;
+    return;    
+  }
+}
+
+void showLCDBrightnessSettingView () {
+  if (shouldRenderRangeSettingPixels) {
+    lcd.clear();
+    lcd.print("LCD Brightness");
+
+    int filledBars = map(rangeValue, 0, 255, 0, 16);
+    analogWrite(LCD_BRIGHTNESS_PIN, rangeValue);
+
+    displayRange(filledBars);
+    shouldRenderRangeSettingPixels = false;
+  }
+
+  Directions nextDirection = getDirectionFromJoystick();
+  if (nextDirection != -1 && nextDirection == UP) {
+    handleItemExit(menuSelectedItemIdx);
+    lcd.clear();
+
+    settingsData.LCDBrightness = rangeValue;
+    writeDataToStorage(SETTINGS_START_OFFSET, settingsData);
+
+    rangeValue = -1;
+
+    shouldRenderRangeSettingPixels = true;
+    return;
+  }
+
+  if (nextDirection != -1 && (nextDirection == RIGHT || nextDirection == LEFT)) {
+    rangeValue += nextDirection == RIGHT ? LCD_BRIGHTNESS_RANGE_STEP : -LCD_BRIGHTNESS_RANGE_STEP;
     rangeValue = constrain(rangeValue, 0, 255);
 
     shouldRenderRangeSettingPixels = true;
