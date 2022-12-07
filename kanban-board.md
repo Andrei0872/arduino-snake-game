@@ -26,9 +26,10 @@
   - update(if needed) after game is done
 - Settings:
   - difficulty level(i.e. snake's speed)
-  - LCD contrast. save in EEPROM
-  - LCD brightness. save in EEPROM
-  - Matrix brightness. save in EEPROM
+  - LCD contrast. save in EEPROM - 0-255
+  - LCD brightness. save in EEPROM - 0-255;
+    - connect to PWM pin(e.g. 6)
+  - Matrix brightness. save in EEPROM - 0-15
   - Sounds on or off. save in EEPROM
   **note**: you can use something similar to a range input
 <!-- - About: name + GH link -->
@@ -39,7 +40,9 @@
 <!-- - onClick: switch form parent to child -->
 <!-- - onClick: switch form child to parent -->
 
-generic input range component(function)
+<!-- 1. refactor: use struct instead of separated string -->
+<!-- 2. control LCD brightness(connect to PWM pin, e.g. 6) -->
+3. generic input range component(function)
 
 ---
 

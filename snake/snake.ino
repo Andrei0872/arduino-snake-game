@@ -48,11 +48,13 @@ const int FOOD_BLINK_INTERVAL = 250;
 const byte rs = 9;
 const byte en = 8;
 const byte d4 = 7;
-const byte d5 = 6;
+const byte d5 = 2;
 const byte d6 = 5;
 const byte d7 = 4;
 
 const byte lcdContrastPin = 3;
+
+const short LCD_BRIGHTNESS_PIN = 6;
 
 LiquidCrystal lcd(rs, en, d4, d5, d6, d7);
 
@@ -183,6 +185,7 @@ void setup() {
   lcd.begin(16, 2);
   // lcdContrast = EEPROM.read(0); // 80
   analogWrite(lcdContrastPin, 120);
+  analogWrite(LCD_BRIGHTNESS_PIN, 110);
   // lcd.print("foobar!");
   // for (int i = 0; i < 255; i += 2) {
   //   analogWrite(lcdContrastPin, i);
