@@ -28,7 +28,7 @@
   - difficulty level(i.e. snake's speed)
   - LCD contrast. save in EEPROM - 0-255
   - LCD brightness. save in EEPROM - 0-255;
-    - connect to PWM pin(e.g. 6)
+    <!-- - connect to PWM pin(e.g. 6) -->
   - Matrix brightness. save in EEPROM - 0-15
   - Sounds on or off. save in EEPROM
   **note**: you can use something similar to a range input
@@ -45,7 +45,7 @@
 <!-- 3. generic input range component(function) -->
 
 refactor: `lcd.print` only when needed, not on every loop iteration
-perf: make read & write fns to storage generic
+<!-- perf: make read & write fns to storage generic -->
 
 ---
 

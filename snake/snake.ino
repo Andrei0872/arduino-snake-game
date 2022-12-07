@@ -10,12 +10,7 @@ const int JOY_RIGHT_TRESHOLD = 600;
 const int JOY_TOP_TRESHOLD = 400;
 const int JOY_BOTTOM_TRESHOLD = 600;
 
-/*
-EEPROM storage conventions:
-
-- 0-42: highscore data;
-*/
-
+const int HIGHSCORE_START_OFFSET = 0;
 struct Highscore {
   // 13 = `X. ` occupies 3 bytes and the rest is destined for the actual content.
   
@@ -23,6 +18,15 @@ struct Highscore {
   char second[13];
   char third[13];
 } highscoreData;
+
+const int SETTINGS_START_OFFSET = HIGHSCORE_START_OFFSET + sizeof(Highscore);
+struct Settings {
+  byte difficultyLevel;
+  byte LCDContrast;
+  byte LCDBrightness;
+  byte matrixBrightness;
+  bool hasSoundsOn;
+};
 
 enum Directions {
   LEFT = 0,
@@ -217,18 +221,16 @@ void setup() {
   lcd.createChar(2, snakeGlyph);
   lcd.createChar(3, barGlyph);
 
-  int nextOffset = readHighscoreData(0);
+  readDataFromStorage(HIGHSCORE_START_OFFSET, highscoreData);
 
-  Serial.println(highscoreData.first);
-  Serial.println(highscoreData.second);
-  Serial.println(highscoreData.third);
-  Serial.println(nextOffset);
-
-  // strcpy(highscoreData.second, "bBb:8888");
-
-  // nextOffset = writeHighscoreData(0);
+  // Serial.println(highscoreData.first);
+  // Serial.println(highscoreData.second);
+  // Serial.println(highscoreData.third);
   // Serial.println(nextOffset);
-  // Serial.println(sizeof(highscoreData));
+
+  // strcpy(highscoreData.second, "bbb:7777");
+
+  // writeDataToStorage(HIGHSCORE_START_OFFSET, highscoreData);
 }
 
 void loop() {
@@ -619,16 +621,15 @@ void handleItemExit (int itemIdx) {
   }
 }
 
-// TODO: make these generic ?
-int readHighscoreData (int offset) {  
-  EEPROM.get(offset, highscoreData);
+template<typename T> int readDataFromStorage (int offset, T& data) {  
+  EEPROM.get(offset, data);
 
-  return offset + sizeof(highscoreData);
+  return offset + sizeof(data);
 }
-int writeHighscoreData (int offset) {
-  EEPROM.put(0, highscoreData);
+template<typename T> int writeDataToStorage (int offset, T& data) {
+  EEPROM.put(offset, data);
 
-  return offset + sizeof(highscoreData);
+  return offset + sizeof(data);
 }
 
 void displayRange (int filledBars) {
