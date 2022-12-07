@@ -26,7 +26,7 @@
   - update(if needed) after game is done
 - Settings:
   - difficulty level(i.e. snake's speed)
-  - LCD contrast. save in EEPROM - 0-255
+  <!-- - LCD contrast. save in EEPROM - 0-255 -->
   - LCD brightness. save in EEPROM - 0-255;
     <!-- - connect to PWM pin(e.g. 6) -->
   - Matrix brightness. save in EEPROM - 0-15

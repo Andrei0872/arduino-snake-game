@@ -20,13 +20,14 @@ struct Highscore {
 } highscoreData;
 
 const int SETTINGS_START_OFFSET = HIGHSCORE_START_OFFSET + sizeof(Highscore);
+const int DEFAULT_LCD_CONSTRAST_VALUE = 120;
 struct Settings {
   byte difficultyLevel;
-  byte LCDContrast;
+  byte LCDContrast = DEFAULT_LCD_CONSTRAST_VALUE;
   byte LCDBrightness;
   byte matrixBrightness;
   bool hasSoundsOn;
-};
+} settingsData;
 
 enum Directions {
   LEFT = 0,
@@ -147,7 +148,6 @@ const byte barGlyph[8] = {
 
 const int HIGHSCORE_RECORDS = 3;
 
-const int DEFAULT_LCD_CONSTRAST_VALUE = 120;
 /* ============================================= */
 
 bool isJoystickNeutral = true;
@@ -204,7 +204,6 @@ void setup() {
   pinMode(lcdContrastPin, OUTPUT);
   lcd.begin(16, 2);
   // lcdContrast = EEPROM.read(0); // 80
-  analogWrite(lcdContrastPin, DEFAULT_LCD_CONSTRAST_VALUE);
   analogWrite(LCD_BRIGHTNESS_PIN, 110);
   // lcd.print("foobar!");
   // for (int i = 0; i < 255; i += 2) {
@@ -222,6 +221,11 @@ void setup() {
   lcd.createChar(3, barGlyph);
 
   readDataFromStorage(HIGHSCORE_START_OFFSET, highscoreData);
+  readDataFromStorage(SETTINGS_START_OFFSET, settingsData);
+
+  Serial.println(settingsData.LCDContrast);
+
+  analogWrite(lcdContrastPin, settingsData.LCDContrast);
 
   // Serial.println(highscoreData.first);
   // Serial.println(highscoreData.second);
@@ -272,7 +276,7 @@ void loop() {
       break;
     }
     case SettingLCDContrast: {
-      rangeValue = rangeValue != -1 ? rangeValue : DEFAULT_LCD_CONSTRAST_VALUE;
+      rangeValue = rangeValue != -1 ? rangeValue : settingsData.LCDContrast;
       showLCDContrastSettingView();
       break;
     }
@@ -659,6 +663,10 @@ void showLCDContrastSettingView () {
   if (nextDirection != -1 && nextDirection == UP) {
     handleItemExit(menuSelectedItemIdx);
     lcd.clear();
+
+    settingsData.LCDContrast = rangeValue;
+    writeDataToStorage(SETTINGS_START_OFFSET, settingsData);
+
     shouldRenderRangeSettingPixels = true;
     return;
   }
