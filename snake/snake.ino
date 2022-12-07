@@ -74,10 +74,10 @@ const char* menuItems[] = {
 
 const int SETTINGS_MENU_ITEMS_LENGTH = 5;
 const char* settingsMenuItems[] = {
-  "1. Difficulty Level",
+  "1. Diff. Level",
   "2. LCD contrast",
-  "3. LCD brightness",
-  "4. Matrix brightness",
+  "3. LCD BRT",
+  "4. Matrix BRT",
   "5. Sound",
 };
 
@@ -202,9 +202,9 @@ void setup() {
 
   readHighscoreData(0);
 
-  Serial.println(highscoreList[0]);
-  Serial.println(highscoreList[1]);
-  Serial.println(highscoreList[2]);
+  // Serial.println(highscoreList[0]);
+  // Serial.println(highscoreList[1]);
+  // Serial.println(highscoreList[2]);
 
   // char hs[14] = "BbB:888";
   // strcpy(highscoreList[1], hs);
@@ -256,6 +256,9 @@ void loop() {
 void showMenu (const char* menuItems[], int menuItemsLength) {
   menuItemIdx = *menuItemIdxPtr;
   menuSelectedItemIdx = *menuSelectedItemIdxPtr;
+
+  Serial.println(menuItems[menuItemIdx]);
+  Serial.println(menuItems[menuItemIdx + 1]);
 
   lcd.setCursor(0, 0);
   lcd.print(menuItems[menuItemIdx]);
