@@ -164,6 +164,10 @@ int settingsMenuSelectedItemIdx = 0;
 int aboutItemIdx = 0;
 int aboutSelectedItemIdx = 0;
 
+// Highscore records.
+int highscoreItemIdx = 0;
+int highscoreSelectedItemIdx = 0;
+
 /* ============================================= */
 
 void setup() {
@@ -374,11 +378,17 @@ void showHighscoreMenu () {
     
     return;
   }
-  
-  // menuItemIdxPtr = &settingsMenuItemIdx;
-  // menuSelectedItemIdxPtr = &settingsMenuSelectedItemIdx;
+
+  menuItemIdxPtr = &highscoreItemIdx;
+  menuSelectedItemIdxPtr = &highscoreSelectedItemIdx;
+
+  const char* highscoreListItems[] = {
+    highscoreList[0],
+    highscoreList[1],
+    highscoreList[2],
+  };
     
-  // showMenu(settingsMenuItems, SETTINGS_MENU_ITEMS_LENGTH);
+  showMenu(highscoreListItems, HIGHSCORE_RECORDS);
 }
 
 void showAboutSection () {

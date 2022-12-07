@@ -18,6 +18,7 @@
 <!-- - Play game. on enter -> start -->
 <!-- - switch from parent menu to child menu -->
 - Highscore.
+  <!-- - fix: display highscore -->
   <!-- - handle the case where there are no highscores: display message -->
   <!-- - save data in EEPROM
   - read data from EEPROM
@@ -37,6 +38,8 @@
 <!-- - refactor `showMenu` so that it accepts params(i.e. becomes reusable) -->
 <!-- - onClick: switch form parent to child -->
 <!-- - onClick: switch form child to parent -->
+
+generic input range component(function)
 
 ---
 
