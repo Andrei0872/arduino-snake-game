@@ -55,15 +55,14 @@ refactor: `lcd.print` only when needed, not on every loop iteration
 - add buzzer
 - make the snake move continuously in one direction
 - keep track of score
-- display the score on the LCD
 - sound: when eating food
 - sound: when losing
 - after food is eaten: grow snake
 - after food is eaten: spawn another food dot randomly
 - if head touches tail: game over
-- while playing: display current score
+<!-- - while playing: display current score -->
 - after game over
-  show *Congratulations on reaching level/score X. (1)You did better than y people!*.
+  show *Congratulations on reaching level/score X. `(1)`You did better than y people!*.
   if `(1)` is true:
     ask for username in a second screen
     upon button press, show settings main menu
@@ -73,4 +72,5 @@ refactor: `lcd.print` only when needed, not on every loop iteration
 - fix: perturbation joystick(i.e. use debounce)
 - fix(food): always random when starting the game; the crt problem is that the food is always spawned in the same spot
 - fix: ensure the random food point is not spawned in an occupied position
+- fix: move snake glyph at the beginning
 - refactor: clean code, constants, comments, cruft, simplify switch cases statements etc.

@@ -162,6 +162,7 @@ bool isJoystickNeutral = true;
 
 // { 0, 0 } = bottom left corner.
 Position crtPos = Position { 0, 1 };
+Position tailPos = crtPos;
 
 Directions crtDirection = -1;
 
@@ -197,6 +198,9 @@ int highscoreSelectedItemIdx = 0;
 
 int rangeValue = -1;
 bool shouldRenderRangeSettingPixels = true;
+
+int crtScore = 0;
+bool hasDisplayedInitialScore = false;
 
 /* ============================================= */
 
@@ -263,6 +267,11 @@ void loop() {
       break;
     }
     case Playing: {
+      if (!hasDisplayedInitialScore) {
+        hasDisplayedInitialScore = true;
+        displayCrtScore();
+      }
+
       playGame();
       break;
     }
@@ -406,23 +415,29 @@ void playGame () {
   }
 
   Directions nextDirection = getDirectionFromJoystick();
-  if (crtDirection == nextDirection) {
+  if (nextDirection == -1) {
     return;
   }
+  crtDirection = nextDirection;
 
   deactivatePointOnMatrix(crtPos);
-
-  crtDirection = nextDirection;
-  
-  if (nextDirection != -1) {
-    computeNextPosition(nextDirection);
-  }
-
+  computeNextPosition(nextDirection, crtPos);
   activatePointOnMatrix(crtPos);
+
+  // Make snake continuously move in one direction.
+  // Add to tail.
 
   if (arePositionsEqual(crtPos, foodPos)) {
     computeRandomFoodPosition();
+    crtScore++;
+    displayCrtScore();
   }
+}
+
+void displayCrtScore () {
+  lcd.clear();
+  lcd.print("Score: ");
+  lcd.print(crtScore);
 }
 
 void showHighscoreMenu () {
@@ -526,7 +541,7 @@ void deactivatePointOnMatrix(Position& crtPos) {
   lc.setLed(0, crtPos.col, crtPos.row, false);
 }
 
-void computeNextPosition (Directions& direction) {
+void computeNextPosition (Directions& direction, Position& crtPos) {
   switch (direction) {
     case DOWN: {
       crtPos.row = crtPos.row - 1 < 0 ? MATRIX_SIZE - 1 : crtPos.row - 1; 
