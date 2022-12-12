@@ -48,6 +48,7 @@ byte matrixBrightness = 2;
 
 struct Position {
   int row, col;
+  int crtDirection;
 };
 
 const int FOOD_BLINK_INTERVAL = 250;
@@ -156,13 +157,17 @@ const int LCD_CONTRAST_RANGE_STEP = 255 / 16;
 const int LCD_BRIGHTNESS_RANGE_STEP = 255 / 16;
 const int MATRIX_BRIGHTNESS_RANGE_STEP = 1;
 
+const int UPDATE_SNAKE_DOTS_INTERVAL = 500;
+
 /* ============================================= */
 
 bool isJoystickNeutral = true;
 
 // { 0, 0 } = bottom left corner.
 Position crtPos = Position { 0, 1 };
-Position tailPos = crtPos;
+
+Position tailPos, headPos;
+// headPos = tailPos = crtPos;
 
 Directions crtDirection = -1;
 
@@ -171,6 +176,7 @@ bool isFoodDotActive = true;
 unsigned long foodBlinkTimestamp = millis();
 
 ProgramState crtProgramState = Greeting;
+// ProgramState crtProgramState = Playing;
 
 unsigned long greetingMessageTimestamp = millis();
 
@@ -201,6 +207,10 @@ bool shouldRenderRangeSettingPixels = true;
 
 int crtScore = 0;
 bool hasDisplayedInitialScore = false;
+
+unsigned long updatedSnakeTimestamp = millis();
+
+
 
 /* ============================================= */
 
@@ -258,6 +268,9 @@ void setup() {
   // writeDataToStorage(HIGHSCORE_START_OFFSET, highscoreData);
 
   // toggleAllMatrixPoints(true);
+
+  crtPos.crtDirection = -1;
+  headPos = tailPos = crtPos;
 }
 
 void loop() {
@@ -408,6 +421,8 @@ void showGreetingMessage () {
 
 void playGame () {
   blinkFood();
+  updateSnakeDots();
+  checkIfFoodEaten();
 
   int joySwitchValue = !digitalRead(JOY_SW_PIN);
   if (joySwitchValue) {
@@ -418,20 +433,42 @@ void playGame () {
   if (nextDirection == -1) {
     return;
   }
-  crtDirection = nextDirection;
 
-  deactivatePointOnMatrix(crtPos);
-  computeNextPosition(nextDirection, crtPos);
-  activatePointOnMatrix(crtPos);
+  if (nextDirection != crtPos.crtDirection) {
+    deactivatePointOnMatrix(crtPos);
+    computeNextPosition(nextDirection, crtPos);
+    crtPos.crtDirection = nextDirection;
+    activatePointOnMatrix(crtPos);
+    
+    updatedSnakeTimestamp = millis();
+    checkIfFoodEaten();
+  }
+}
 
-  // Make snake continuously move in one direction.
-  // Add to tail.
-
-  if (arePositionsEqual(crtPos, foodPos)) {
+void checkIfFoodEaten () {
+    if (arePositionsEqual(crtPos, foodPos)) {
     computeRandomFoodPosition();
     crtScore++;
     displayCrtScore();
   }
+}
+
+void updateSnakeDots () {
+  if (crtPos.crtDirection == -1) {
+    updatedSnakeTimestamp = millis();
+    return;
+  }
+
+  if (!(millis() - updatedSnakeTimestamp > UPDATE_SNAKE_DOTS_INTERVAL)) {
+    return;
+  }
+
+  deactivatePointOnMatrix(crtPos);
+  computeNextPosition(crtPos.crtDirection, crtPos);
+  activatePointOnMatrix(crtPos);
+
+  updatedSnakeTimestamp = millis();
+
 }
 
 void displayCrtScore () {
@@ -541,7 +578,7 @@ void deactivatePointOnMatrix(Position& crtPos) {
   lc.setLed(0, crtPos.col, crtPos.row, false);
 }
 
-void computeNextPosition (Directions& direction, Position& crtPos) {
+void computeNextPosition (int direction, Position& crtPos) {
   switch (direction) {
     case DOWN: {
       crtPos.row = crtPos.row - 1 < 0 ? MATRIX_SIZE - 1 : crtPos.row - 1; 

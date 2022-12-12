@@ -51,12 +51,8 @@ refactor: `lcd.print` only when needed, not on every loop iteration
 
 ## Snake game
 
-- settings: difficulty level = snake's speed
-- add buzzer
-- make the snake move continuously in one direction
-- keep track of score
-- sound: when eating food
-- sound: when losing
+<!-- - make the snake move continuously in one direction -->
+<!-- - keep track of score -->
 - after food is eaten: grow snake
 - after food is eaten: spawn another food dot randomly
 - if head touches tail: game over
@@ -65,6 +61,7 @@ refactor: `lcd.print` only when needed, not on every loop iteration
   show *Congratulations on reaching level/score X. `(1)`You did better than y people!*.
   if `(1)` is true:
     ask for username in a second screen
+    save score 
     upon button press, show settings main menu
   else:
     show main menu
@@ -73,4 +70,11 @@ refactor: `lcd.print` only when needed, not on every loop iteration
 - fix(food): always random when starting the game; the crt problem is that the food is always spawned in the same spot
 - fix: ensure the random food point is not spawned in an occupied position
 - fix: move snake glyph at the beginning
+
+- add buzzer
+- sound: when eating food
+- sound: when losing
+
+- settings: difficulty level = snake's speed
+
 - refactor: clean code, constants, comments, cruft, simplify switch cases statements etc.
