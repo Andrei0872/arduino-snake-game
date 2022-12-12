@@ -209,6 +209,7 @@ unsigned long updatedSnakeTimestamp = millis();
 
 Position* snakeDots[MATRIX_SIZE * MATRIX_SIZE];
 int snakeDotsCount = 0;
+Directions turningPoints[MATRIX_SIZE][MATRIX_SIZE];
 
 /* ============================================= */
 
@@ -269,6 +270,8 @@ void setup() {
 
   crtPos.crtDirection = -1;
   snakeDots[snakeDotsCount++] = &crtPos;
+
+  memset(turningPoints, -1, sizeof(turningPoints));
 }
 
 void loop() {
@@ -433,18 +436,21 @@ void playGame () {
   }
 
   if (nextDirection != crtPos.crtDirection) {
-    deactivatePointOnMatrix(crtPos);
-    computeNextPosition(nextDirection, crtPos);
     crtPos.crtDirection = nextDirection;
-    activatePointOnMatrix(crtPos);
+    markTurningPoint(crtPos);
 
-    // printPos(crtPos);
-    // Serial.println("======");
-    // printPos(*snakeDots[0]);
-    
-    updatedSnakeTimestamp = millis();
     checkIfFoodEaten();
   }
+}
+
+void markTurningPoint (Position& pos) {
+  if (snakeDotsCount == 1) {
+    return;
+  }
+
+  Serial.print("TURNING POINT!");
+  printPos(pos);
+  turningPoints[pos.row][pos.col] = pos.crtDirection;
 }
 
 void checkIfFoodEaten () {
@@ -508,21 +514,33 @@ void updateSnakeDots () {
     return;
   }
 
+  applyTurningPoints();
+
   for (int i = 0; i < snakeDotsCount; i++) {
     Position& pos = *snakeDots[i];
 
-    printPos(pos);
-  
     deactivatePointOnMatrix(pos);
     computeNextPosition(pos.crtDirection, pos);
     activatePointOnMatrix(pos);
   }
-  // deactivatePointOnMatrix(crtPos);
-  // computeNextPosition(crtPos.crtDirection, crtPos);
-  // activatePointOnMatrix(crtPos);
 
   updatedSnakeTimestamp = millis();
+}
 
+void applyTurningPoints () {
+  for (int i = 0; i < snakeDotsCount; i++) {
+    Position& pos = *snakeDots[i];
+    
+    int newDirection = turningPoints[pos.row][pos.col];
+    if (newDirection != -1) {
+      pos.crtDirection = newDirection;
+      printPos(pos);
+
+      if (i == snakeDotsCount - 1) {
+        turningPoints[pos.row][pos.col] = -1;
+      }
+    }
+  }
 }
 
 void displayCrtScore () {
