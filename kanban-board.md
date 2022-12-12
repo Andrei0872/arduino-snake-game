@@ -57,7 +57,7 @@ refactor: `lcd.print` only when needed, not on every loop iteration
 <!-- - handle direction changes -->
 - after food is eaten: **properly** spawn another food dot randomly
 <!-- - prevent switching direction 180 deg -->
-- if head touches tail: game over
+<!-- - if head touches tail or any part of the body: game over -->
 <!-- - while playing: display current score -->
 - after game over
   show *Congratulations on reaching level/score X. `(1)`You did better than y people!*.

@@ -79,6 +79,7 @@ enum ProgramState {
   SettingLCDContrast,
   SettingLCDBrightness,
   SettingMatrixrightness,
+  GameOver,
 };
 
 const int GREETING_MESSAGE_TIME = 2500;
@@ -334,7 +335,15 @@ void loop() {
       showMatrixBrightnessSettingView();
       break;
     }
+    case GameOver: {
+      showGameOverView();
+      break;
+    }
   }
+}
+
+void showGameOverView () {
+    
 }
 
 void showMenu (const char* menuItems[], int menuItemsLength) {
@@ -439,8 +448,29 @@ void playGame () {
     crtPos.crtDirection = nextDirection;
     markTurningPoint(crtPos);
 
+    if (isGameOver(crtPos, nextDirection)) {
+      Serial.println("GAME OVER!");
+      
+      return;
+    }
+
     checkIfFoodEaten();
   }
+}
+
+bool isGameOver (Position& crtPos, int nextDirection) {
+  Position nextPos = crtPos;
+  computeNextPosition(nextDirection, nextPos);
+
+  for (int i = 0; i < snakeDotsCount; i++) {
+    Position& snakeDot = *snakeDots[i];
+
+    if (arePositionsEqual(nextPos, snakeDot)) {
+      return true;
+    }
+  }
+
+  return false;
 }
 
 void markTurningPoint (Position& pos) {
@@ -448,8 +478,6 @@ void markTurningPoint (Position& pos) {
     return;
   }
 
-  Serial.print("TURNING POINT!");
-  printPos(pos);
   turningPoints[pos.row][pos.col] = pos.crtDirection;
 }
 
@@ -551,7 +579,6 @@ void applyTurningPoints () {
     int newDirection = turningPoints[pos.row][pos.col];
     if (newDirection != -1) {
       pos.crtDirection = newDirection;
-      printPos(pos);
 
       if (i == snakeDotsCount - 1) {
         turningPoints[pos.row][pos.col] = -1;
