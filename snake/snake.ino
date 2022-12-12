@@ -166,9 +166,6 @@ bool isJoystickNeutral = true;
 // { 0, 0 } = bottom left corner.
 Position crtPos = Position { 0, 1 };
 
-Position tailPos, headPos;
-// headPos = tailPos = crtPos;
-
 Directions crtDirection = -1;
 
 Position foodPos; 
@@ -210,7 +207,8 @@ bool hasDisplayedInitialScore = false;
 
 unsigned long updatedSnakeTimestamp = millis();
 
-
+Position* snakeDots[MATRIX_SIZE * MATRIX_SIZE];
+int snakeDotsCount = 0;
 
 /* ============================================= */
 
@@ -270,7 +268,7 @@ void setup() {
   // toggleAllMatrixPoints(true);
 
   crtPos.crtDirection = -1;
-  headPos = tailPos = crtPos;
+  snakeDots[snakeDotsCount++] = &crtPos;
 }
 
 void loop() {
@@ -439,6 +437,10 @@ void playGame () {
     computeNextPosition(nextDirection, crtPos);
     crtPos.crtDirection = nextDirection;
     activatePointOnMatrix(crtPos);
+
+    // printPos(crtPos);
+    // Serial.println("======");
+    // printPos(*snakeDots[0]);
     
     updatedSnakeTimestamp = millis();
     checkIfFoodEaten();
@@ -446,11 +448,54 @@ void playGame () {
 }
 
 void checkIfFoodEaten () {
-    if (arePositionsEqual(crtPos, foodPos)) {
+  if (arePositionsEqual(crtPos, foodPos)) {
+    addToTail();
     computeRandomFoodPosition();
     crtScore++;
     displayCrtScore();
   }
+}
+
+void addToTail () {
+  Position& tail = *snakeDots[snakeDotsCount - 1];
+  Position* newTail = new Position();
+  *newTail = tail;
+
+  // Adding in the opposite direction the tail is currently having.
+  switch (tail.crtDirection) {
+    case UP: {
+      computeNextPosition(DOWN, *newTail);
+      newTail->crtDirection = UP;      
+      break;
+    }
+    case DOWN: {
+      computeNextPosition(UP, *newTail);
+      newTail->crtDirection = DOWN;
+      break;
+    }
+    case LEFT: {
+      computeNextPosition(RIGHT, *newTail);
+      newTail->crtDirection = LEFT;
+      break;
+    }
+    case RIGHT: {
+      computeNextPosition(LEFT, *newTail);
+      newTail->crtDirection = RIGHT;
+      break;
+    }
+  }
+
+  snakeDots[snakeDotsCount++] = newTail;
+}
+
+// Helper fn.
+void printPos (Position& pos) {
+  Serial.print("col: ");
+  Serial.println(pos.col);
+  Serial.print("row: ");
+  Serial.println(pos.row);
+  Serial.print("crtDirection: ");
+  Serial.println(pos.crtDirection);
 }
 
 void updateSnakeDots () {
@@ -463,9 +508,18 @@ void updateSnakeDots () {
     return;
   }
 
-  deactivatePointOnMatrix(crtPos);
-  computeNextPosition(crtPos.crtDirection, crtPos);
-  activatePointOnMatrix(crtPos);
+  for (int i = 0; i < snakeDotsCount; i++) {
+    Position& pos = *snakeDots[i];
+
+    printPos(pos);
+  
+    deactivatePointOnMatrix(pos);
+    computeNextPosition(pos.crtDirection, pos);
+    activatePointOnMatrix(pos);
+  }
+  // deactivatePointOnMatrix(crtPos);
+  // computeNextPosition(crtPos.crtDirection, crtPos);
+  // activatePointOnMatrix(crtPos);
 
   updatedSnakeTimestamp = millis();
 

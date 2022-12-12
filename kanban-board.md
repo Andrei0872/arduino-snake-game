@@ -53,8 +53,9 @@ refactor: `lcd.print` only when needed, not on every loop iteration
 
 <!-- - make the snake move continuously in one direction -->
 <!-- - keep track of score -->
-- after food is eaten: grow snake
-- after food is eaten: spawn another food dot randomly
+<!-- - after food is eaten: grow snake -->
+- handle direction changes
+- after food is eaten: **properly** spawn another food dot randomly
 - if head touches tail: game over
 <!-- - while playing: display current score -->
 - after game over
