@@ -431,7 +431,7 @@ void playGame () {
   }
 
   Directions nextDirection = getDirectionFromJoystick();
-  if (nextDirection == -1) {
+  if (nextDirection == -1 || areDirectionsOpposite(nextDirection, crtPos.crtDirection)) {
     return;
   }
 
@@ -502,6 +502,23 @@ void printPos (Position& pos) {
   Serial.println(pos.row);
   Serial.print("crtDirection: ");
   Serial.println(pos.crtDirection);
+}
+
+bool areDirectionsOpposite (int d1, int d2) {
+  switch (d1) {
+    case UP: {
+      return d2 == DOWN;
+    }
+    case DOWN: {
+      return d2 == UP;
+    }
+    case LEFT: {
+      return d2 == RIGHT;
+    }
+    case RIGHT: {
+      return d2 == LEFT;
+    }
+  }
 }
 
 void updateSnakeDots () {

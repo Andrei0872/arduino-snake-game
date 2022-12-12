@@ -56,7 +56,7 @@ refactor: `lcd.print` only when needed, not on every loop iteration
 <!-- - after food is eaten: grow snake -->
 <!-- - handle direction changes -->
 - after food is eaten: **properly** spawn another food dot randomly
-- prevent switching direction 180 deg
+<!-- - prevent switching direction 180 deg -->
 - if head touches tail: game over
 <!-- - while playing: display current score -->
 - after game over
