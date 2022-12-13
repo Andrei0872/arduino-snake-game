@@ -70,7 +70,7 @@ refactor: `lcd.print` only when needed, not on every loop iteration
   <!-- else: -->
     <!-- show main menu -->
 - after game over: show sad face on matrix
-- fix: ensure game over when teleporting results in touching the snake's body
+<!-- - fix: ensure game over when teleporting results in touching the snake's body -->
 - fix(food): always random when starting the game; the crt problem is that the food is always spawned in the same spot
 - fix: ensure the random food point is not spawned in an occupied position
 - fix: move snake glyph at the beginning

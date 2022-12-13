@@ -279,6 +279,7 @@ void setup() {
   // toggleAllMatrixPoints(true);
 
   crtPos.crtDirection = -1;
+  // Position head = crtPos;
   snakeDots[snakeDotsCount++] = &crtPos;
 
   memset(turningPoints, -1, sizeof(turningPoints));
@@ -457,6 +458,17 @@ void getUsernameFromUser (int startCol) {
 void resetGame () {
   resetUsername(username);
   crtScore = 0;
+  toggleAllMatrixPoints(false);
+
+  hasDisplayedInitialScore = false;
+
+  for (int i = 1; i < snakeDotsCount; i++) {
+    free(snakeDots[i]);
+  }
+
+  snakeDotsCount = 1;
+  snakeDots[0]->row = 0;
+  snakeDots[0]->col = 1;
 }
 
 void resetUsername (char* username) {
@@ -615,10 +627,15 @@ void playGame () {
   blinkFood();
   updateSnakeDots();
   checkIfFoodEaten();
+  
+  // TODO: refactor `isGameOver()`.
+  for (int i = 1; i < snakeDotsCount; i++) {
+    Position& snakeDot = *snakeDots[i];
 
-  int joySwitchValue = !digitalRead(JOY_SW_PIN);
-  if (joySwitchValue) {
-    // Serial.println("Clicked!");
+    if (arePositionsEqual(crtPos, snakeDot)) {
+      gameOverHandler();
+      return;
+    }
   }
 
   Directions nextDirection = getDirectionFromJoystick();
@@ -631,12 +648,7 @@ void playGame () {
     markTurningPoint(crtPos);
 
     if (isGameOver(crtPos, nextDirection)) {
-      Serial.println("GAME OVER!");
-      
-      lcd.clear();
-      crtProgramState = GameOverScreen1;
-      gameOverScreen1Timestamp = millis();
-
+      gameOverHandler(); 
       return;
     }
 
@@ -644,11 +656,19 @@ void playGame () {
   }
 }
 
+void gameOverHandler () {
+  Serial.println("GAME OVER!");
+      
+  lcd.clear();
+  crtProgramState = GameOverScreen1;
+  gameOverScreen1Timestamp = millis();
+}
+
 bool isGameOver (Position& crtPos, int nextDirection) {
   Position nextPos = crtPos;
   computeNextPosition(nextDirection, nextPos);
 
-  for (int i = 0; i < snakeDotsCount; i++) {
+  for (int i = 1; i < snakeDotsCount; i++) {
     Position& snakeDot = *snakeDots[i];
 
     if (arePositionsEqual(nextPos, snakeDot)) {
@@ -1045,6 +1065,7 @@ void handleItemExit (int itemIdx) {
     }
     case GameOverScreen2: {
       crtProgramState = Menu;
+      resetGame();
       break;
     }
 
