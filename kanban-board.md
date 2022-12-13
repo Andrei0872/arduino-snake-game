@@ -65,7 +65,7 @@ refactor: `lcd.print` only when needed, not on every loop iteration
     <!-- - ask for username in a second screen -->
     <!-- - save score  -->
     <!-- - upon button press, show settings main menu -->
-    - reset username after save
+    <!-- - reset username after save -->
     - find arrow down glyph
   else:
     show main menu

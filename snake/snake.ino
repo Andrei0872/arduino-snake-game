@@ -208,7 +208,7 @@ int highscoreSelectedItemIdx = 0;
 int rangeValue = -1;
 bool shouldRenderRangeSettingPixels = true;
 
-int crtScore = 11;
+int crtScore = 16;
 bool hasDisplayedInitialScore = false;
 
 unsigned long updatedSnakeTimestamp = millis();
@@ -217,7 +217,7 @@ Position* snakeDots[MATRIX_SIZE * MATRIX_SIZE];
 int snakeDotsCount = 0;
 Directions turningPoints[MATRIX_SIZE][MATRIX_SIZE];
 
-char* username = "AAA";
+char username[4] = "AAA";
 int selectedUsernameCharIdx = 0;
 
 /* ============================================= */
@@ -306,8 +306,6 @@ void loop() {
       break;
     }
     case Menu: {
-      Serial.println(username);
-
       menuItemIdxPtr = &mainMenuItemIdx;
       menuSelectedItemIdxPtr = &mainMenuSelectedItemIdx;
       
@@ -416,8 +414,12 @@ void getUsernameFromUser (int startCol) {
   int joySwitchValue = !digitalRead(JOY_SW_PIN);
   if (joySwitchValue) {
     saveUsernameAndScore();
+    resetGame();
+
+    lcd.clear();
+    
     crtProgramState = Menu;
-    // TODO: reset username.
+
     return;
   }
 
@@ -450,6 +452,15 @@ void getUsernameFromUser (int startCol) {
   } else if (selectedUsernameCharIdx < 0) {
     selectedUsernameCharIdx = strlen(username) - 1;
   }
+}
+
+void resetGame () {
+  resetUsername(username);
+  crtScore = 0;
+}
+
+void resetUsername (char* username) {
+  strcpy(username, "AAA");
 }
 
 void modifySelectedUsernameChar (int charStep, char* username) {
