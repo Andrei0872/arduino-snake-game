@@ -289,6 +289,7 @@ void setup() {
   // Serial.println(username);
 
   // saveUsernameAndScore();
+  randomSeed(analogRead(0));
 }
 
 void loop() {
