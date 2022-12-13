@@ -79,10 +79,12 @@ enum ProgramState {
   SettingLCDContrast,
   SettingLCDBrightness,
   SettingMatrixrightness,
-  GameOver,
+  GameOverScreen1,
+  GameOverScreen2,
 };
 
 const int GREETING_MESSAGE_TIME = 2500;
+const int GAME_OVER_SCREEN1_TIME = 2500;
 
 const int MENU_ITEMS_LENGTH = 5;
 const int MENU_SETTINGS_INDEX = 2;
@@ -173,10 +175,13 @@ Position foodPos;
 bool isFoodDotActive = true;
 unsigned long foodBlinkTimestamp = millis();
 
-ProgramState crtProgramState = Greeting;
+// ProgramState crtProgramState = Greeting;
 // ProgramState crtProgramState = Playing;
+// ProgramState crtProgramState = GameOverScreen1;
+ProgramState crtProgramState = GameOverScreen2;
 
 unsigned long greetingMessageTimestamp = millis();
+unsigned long gameOverScreen1Timestamp = millis();
 
 int menuItemIdx = 0;
 int menuSelectedItemIdx = 0;
@@ -203,7 +208,7 @@ int highscoreSelectedItemIdx = 0;
 int rangeValue = -1;
 bool shouldRenderRangeSettingPixels = true;
 
-int crtScore = 0;
+int crtScore = 11;
 bool hasDisplayedInitialScore = false;
 
 unsigned long updatedSnakeTimestamp = millis();
@@ -211,6 +216,9 @@ unsigned long updatedSnakeTimestamp = millis();
 Position* snakeDots[MATRIX_SIZE * MATRIX_SIZE];
 int snakeDotsCount = 0;
 Directions turningPoints[MATRIX_SIZE][MATRIX_SIZE];
+
+char* username = "AAA";
+int selectedUsernameCharIdx = 0;
 
 /* ============================================= */
 
@@ -258,13 +266,14 @@ void setup() {
   analogWrite(LCD_BRIGHTNESS_PIN, settingsData.LCDBrightness);
   lc.setIntensity(0, settingsData.matrixBrightness);
 
-  // Serial.println(highscoreData.first);
-  // Serial.println(highscoreData.second);
-  // Serial.println(highscoreData.third);
+  Serial.println(highscoreData.first);
+  Serial.println(highscoreData.second);
+  Serial.println(highscoreData.third);
   // Serial.println(nextOffset);
 
-  // strcpy(highscoreData.second, "bbb:7777");
-
+  // strcpy(highscoreData.first, "aaa:10");
+  // strcpy(highscoreData.second, "bbb:7");
+  // strcpy(highscoreData.third, "ccc:5"); 
   // writeDataToStorage(HIGHSCORE_START_OFFSET, highscoreData);
 
   // toggleAllMatrixPoints(true);
@@ -273,6 +282,12 @@ void setup() {
   snakeDots[snakeDotsCount++] = &crtPos;
 
   memset(turningPoints, -1, sizeof(turningPoints));
+  // Serial.println(getHighestSurpassedOnPodium(8));
+  // Serial.println(strlen(username));
+  // Serial.println(sizeof(username));
+  // Serial.println(username);
+
+  // saveUsernameAndScore();
 }
 
 void loop() {
@@ -291,6 +306,8 @@ void loop() {
       break;
     }
     case Menu: {
+      Serial.println(username);
+
       menuItemIdxPtr = &mainMenuItemIdx;
       menuSelectedItemIdxPtr = &mainMenuSelectedItemIdx;
       
@@ -335,15 +352,171 @@ void loop() {
       showMatrixBrightnessSettingView();
       break;
     }
-    case GameOver: {
-      showGameOverView();
+    case GameOverScreen1: {
+      showGameOverScreen1();
+      break;
+    }
+    case GameOverScreen2: {
+      showGameOverScreen2();
       break;
     }
   }
 }
 
-void showGameOverView () {
+// Screen 1: congrats & show score.
+// Screen 2(if 1, 2 or 3): type in username
+  // when leaving: save username along with HS   
+void showGameOverScreen1 () {
+  lcd.setCursor(0, 0);
+  lcd.print("Congratulations");
+
+  lcd.setCursor(0, 1);
+  lcd.print("Score: ");
+  lcd.print(crtScore);
+
+  if (millis() - gameOverScreen1Timestamp > GAME_OVER_SCREEN1_TIME) {
+    lcd.clear();
+    crtProgramState = GameOverScreen2;
+  }
+}
+
+void showGameOverScreen2 () {
+  int surpassedPlayerIdx = getHighestSurpassedOnPodium(crtScore);
+  if (surpassedPlayerIdx == -1) {
+    lcd.clear();
+    lcd.print("The podium");
+    lcd.setCursor(0, 1);
+    lcd.print("stays untouched!");
+
+    Directions nextDirection = getDirectionFromJoystick();
+    if (nextDirection != -1 && nextDirection == UP) {
+      handleItemExit(menuSelectedItemIdx);
+      lcd.clear();
+      return;
+    }
     
+    return;
+  }
+
+  const char* usernameStr = "Username: ";
+  lcd.clear();
+  lcd.setCursor(0, 1);
+  lcd.print(usernameStr);
+  
+  getUsernameFromUser(strlen(usernameStr));
+}
+
+void getUsernameFromUser (int startCol) {
+  lcd.setCursor(startCol + selectedUsernameCharIdx, 0);
+  lcd.print("a");
+
+  lcd.setCursor(startCol, 1);
+  lcd.print(username);
+
+  int joySwitchValue = !digitalRead(JOY_SW_PIN);
+  if (joySwitchValue) {
+    saveUsernameAndScore();
+    crtProgramState = Menu;
+    // TODO: reset username.
+    return;
+  }
+
+  Directions nextDirection = getDirectionFromJoystick();
+  if (nextDirection == -1) {
+    return;
+  }
+
+  switch (nextDirection) {
+    case RIGHT: {
+      modifySelectedUsernameChar(+1, username);
+      break;
+    }
+    case LEFT: {
+      modifySelectedUsernameChar(-1, username);
+      break;
+    }
+    case UP: {
+      selectedUsernameCharIdx--;
+      break;
+    }
+    case DOWN: {
+      selectedUsernameCharIdx++;
+      break;
+    }
+  }
+
+  if (selectedUsernameCharIdx >= 3) {
+    selectedUsernameCharIdx = selectedUsernameCharIdx % strlen(username);
+  } else if (selectedUsernameCharIdx < 0) {
+    selectedUsernameCharIdx = strlen(username) - 1;
+  }
+}
+
+void modifySelectedUsernameChar (int charStep, char* username) {
+  char usernameCh = username[selectedUsernameCharIdx];
+
+  usernameCh += charStep; 
+  // TODO: avoid magic numbers!
+  if (usernameCh > 90) {
+    usernameCh = 65;
+  } else if (usernameCh < 65) {
+    usernameCh = 90;
+  }
+
+  username[selectedUsernameCharIdx] = usernameCh;
+}
+
+void saveUsernameAndScore () {
+  int surpassedPlayerIdx = getHighestSurpassedOnPodium(crtScore);
+
+  char* recordToBeUpdated;
+  switch (surpassedPlayerIdx) {
+    case 0: {
+      recordToBeUpdated = highscoreData.first;
+      break;
+    }
+    case 1: {
+      recordToBeUpdated = highscoreData.second;
+      break;
+    }
+    case 2: {
+      recordToBeUpdated = highscoreData.third;
+      break;
+    }
+  }
+
+  char scoreStr[9];
+  sprintf(scoreStr, "%d", crtScore);
+
+  char newRecord[13];
+  strcpy(newRecord, username);
+  strcpy(newRecord + strlen(newRecord), ":");   
+  strcpy(newRecord + strlen(newRecord), scoreStr);
+
+  // Serial.println(newRecord);
+  strcpy(recordToBeUpdated, newRecord);
+  
+  // Serial.println(highscoreData.first);
+  // Serial.println(highscoreData.second);
+  // Serial.println(highscoreData.third);
+  writeDataToStorage(HIGHSCORE_START_OFFSET, highscoreData);
+}
+
+int getHighestSurpassedOnPodium (int crtScore) {
+  char* highscoreValues[] = {
+    strstr(highscoreData.first, ":") + 1,
+    strstr(highscoreData.second, ":") + 1,
+    strstr(highscoreData.third, ":") + 1,
+  };
+
+  for (int i = 0; i < HIGHSCORE_RECORDS; i++) {
+    int value = atoi(highscoreValues[i]);
+    if (crtScore > value) {
+      return i;
+    }
+  }
+
+  return -1;
 }
 
 void showMenu (const char* menuItems[], int menuItemsLength) {
@@ -451,6 +624,10 @@ void playGame () {
     if (isGameOver(crtPos, nextDirection)) {
       Serial.println("GAME OVER!");
       
+      lcd.clear();
+      crtProgramState = GameOverScreen1;
+      gameOverScreen1Timestamp = millis();
+
       return;
     }
 
@@ -828,6 +1005,11 @@ void handleItemExit (int itemIdx) {
       crtProgramState = Menu;
       break;
     }
+    case GameOverScreen2: {
+      crtProgramState = Menu;
+      break;
+    }
+
     case SettingLCDContrast:
     case SettingLCDBrightness:
     case SettingMatrixrightness: {

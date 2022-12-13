@@ -60,15 +60,16 @@ refactor: `lcd.print` only when needed, not on every loop iteration
 <!-- - if head touches tail or any part of the body: game over -->
 <!-- - while playing: display current score -->
 - after game over
-  show *Congratulations on reaching level/score X. `(1)`You did better than y people!*.
+  <!-- show *Congratulations on reaching level/score X. `(1)`You did better than y people!*. -->
   if `(1)` is true:
-    ask for username in a second screen
-    save score 
-    upon button press, show settings main menu
+    <!-- - ask for username in a second screen -->
+    <!-- - save score  -->
+    <!-- - upon button press, show settings main menu -->
+    - reset username after save
+    - find arrow down glyph
   else:
     show main menu
 - after game over: show sad face on matrix
-- fix: perturbation joystick(i.e. use debounce)
 - fix(food): always random when starting the game; the crt problem is that the food is always spawned in the same spot
 - fix: ensure the random food point is not spawned in an occupied position
 - fix: move snake glyph at the beginning
