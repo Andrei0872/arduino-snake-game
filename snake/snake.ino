@@ -406,7 +406,7 @@ void showGameOverScreen2 () {
 
 void getUsernameFromUser (int startCol) {
   lcd.setCursor(startCol + selectedUsernameCharIdx, 0);
-  lcd.print("a");
+  lcd.write((byte)0);
 
   lcd.setCursor(startCol, 1);
   lcd.print(username);
