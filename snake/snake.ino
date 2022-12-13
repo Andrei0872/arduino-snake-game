@@ -208,7 +208,7 @@ int highscoreSelectedItemIdx = 0;
 int rangeValue = -1;
 bool shouldRenderRangeSettingPixels = true;
 
-int crtScore = 16;
+int crtScore = 5;
 bool hasDisplayedInitialScore = false;
 
 unsigned long updatedSnakeTimestamp = millis();
@@ -606,8 +606,6 @@ void showGreetingMessage () {
   if (millis() - greetingMessageTimestamp > GREETING_MESSAGE_TIME) {
     lcd.clear();
     
-    // activatePointOnMatrix(crtPos);
-    // computeRandomFoodPosition();
     crtProgramState = Menu;
     isJoystickNeutral = true;
   }
@@ -909,6 +907,35 @@ void computeNextPosition (int direction, Position& crtPos) {
 void computeRandomFoodPosition () {
   foodPos.row = random(MATRIX_SIZE);
   foodPos.col = random(MATRIX_SIZE);
+
+  bool needsNewPosition = false;
+  for (int i = 0; i < snakeDotsCount; i++) {
+    if (arePositionsEqual(foodPos, *snakeDots[i])) {
+      needsNewPosition = true;
+      break;
+    }
+  }
+
+  if (!needsNewPosition) {
+    return;
+  }
+
+  for (int i = 0; i < MATRIX_SIZE; i++) {
+    for (int j = 0; j < MATRIX_SIZE; j++) {
+      for (int k = 0; k < snakeDotsCount; k++) {
+        Position& pos = *snakeDots[i];
+        if (pos.row == i && pos.col == j) {
+          goto COLUMN;
+        } else {
+          foodPos.row = i;
+          foodPos.col = j;
+          
+          return;
+        }
+      }
+      COLUMN: continue;
+    }
+  }
 }
 
 void blinkFood () {
