@@ -81,6 +81,7 @@ enum ProgramState {
   GameOverScreen2,
   ResetHighscore,
   ResetHighscoreSuccessful,
+  DifficultyLevel,
 };
 
 const int GREETING_MESSAGE_TIME = 2500;
@@ -111,6 +112,13 @@ const int ABOUT_ITEMS_LENGTH = 2;
 const char* aboutItems[] = {
   "Andrei Gatej",
   "andreigatej.dev"
+};
+
+const int DIFFICULTY_LEVELS_LENGTH = 3;
+const char* difficultyLevels[] = {
+  "1. Easy",
+  "2. Medium",
+  "3. Hard",
 };
 
 const byte arrorwDownGlyph[8] = {
@@ -162,11 +170,12 @@ const int LCD_CONTRAST_RANGE_STEP = 255 / 16;
 const int LCD_BRIGHTNESS_RANGE_STEP = 255 / 16;
 const int MATRIX_BRIGHTNESS_RANGE_STEP = 1;
 
-const int UPDATE_SNAKE_DOTS_INTERVAL = 500;
+const int difficultyLevelsValues[3] = { 600, 350, 200 };
 
 /* ============================================= */
 
 bool isJoystickNeutral = true;
+int updateSnakeDotsInterval = 500;
 
 // { 0, 0 } = bottom left corner.
 Position crtPos = Position { 0, 1 };
@@ -274,6 +283,9 @@ void setup() {
   analogWrite(lcdContrastPin, settingsData.LCDContrast);
   analogWrite(LCD_BRIGHTNESS_PIN, settingsData.LCDBrightness);
   lc.setIntensity(0, settingsData.matrixBrightness);
+  updateSnakeDotsInterval = difficultyLevelsValues[settingsData.difficultyLevel];
+
+  Serial.println(updateSnakeDotsInterval);
 
   // Serial.println(highscoreData.first);
   // Serial.println(highscoreData.second);
@@ -299,6 +311,7 @@ void setup() {
 
   // saveUsernameAndScore();
   randomSeed(analogRead(0));
+
 }
 
 void writeDummyData () {
@@ -402,7 +415,16 @@ void loop() {
       showHSResetSuccessfulMessage();
       break;
     }
+    case DifficultyLevel: {
+      showDifficultyLevels();
+      break;
+    }
   }
+}
+
+void showDifficultyLevels () {
+
+  showMenu(difficultyLevels, DIFFICULTY_LEVELS_LENGTH); 
 }
 
 void showHSResetSuccessfulMessage () {  
@@ -749,7 +771,7 @@ void checkIfFoodEaten () {
   if (arePositionsEqual(crtPos, foodPos)) {
     addToTail();
     computeRandomFoodPosition();
-    crtScore++;
+    crtScore += (settingsData.difficultyLevel + 1) * 1;
     displayCrtScore();
   }
 }
@@ -819,7 +841,7 @@ void updateSnakeDots () {
     return;
   }
 
-  if (!(millis() - updatedSnakeTimestamp > UPDATE_SNAKE_DOTS_INTERVAL)) {
+  if (!(millis() - updatedSnakeTimestamp > updateSnakeDotsInterval)) {
     return;
   }
 
@@ -1114,6 +1136,11 @@ void handleItemEnter (int itemIdx) {
 
           break;
         }
+        case 0: {
+          // Difficulty levels.
+          crtProgramState = DifficultyLevel;
+          break;
+        }
       }
       break;
     }
@@ -1153,6 +1180,15 @@ void handleItemExit (int itemIdx) {
     case SettingMatrixrightness: {
       crtProgramState = SettingsMenu;
       break;
+    }
+
+    case DifficultyLevel: {
+      updateSnakeDotsInterval = difficultyLevelsValues[itemIdx];
+
+      settingsData.difficultyLevel = itemIdx;
+      writeDataToStorage(SETTINGS_START_OFFSET, settingsData);
+
+      crtProgramState = SettingsMenu;
     }
 
     default: {
