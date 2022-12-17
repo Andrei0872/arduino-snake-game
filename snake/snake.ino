@@ -79,10 +79,13 @@ enum ProgramState {
   SettingMatrixrightness,
   GameOverScreen1,
   GameOverScreen2,
+  ResetHighscore,
+  ResetHighscoreSuccessful,
 };
 
 const int GREETING_MESSAGE_TIME = 2500;
 const int GAME_OVER_SCREEN1_TIME = 2500;
+const int HS_RESET_MESSAGE_TIME = 2500;
 
 const int MENU_ITEMS_LENGTH = 5;
 const int MENU_SETTINGS_INDEX = 2;
@@ -94,13 +97,14 @@ const char* menuItems[] = {
   "5. How to play"
 };
 
-const int SETTINGS_MENU_ITEMS_LENGTH = 5;
+const int SETTINGS_MENU_ITEMS_LENGTH = 6;
 const char* settingsMenuItems[] = {
   "1. Diff. Level",
   "2. LCD contrast",
   "3. LCD BRT",
   "4. Matrix BRT",
   "5. Sound",
+  "6. Reset HS",
 };
 
 const int ABOUT_ITEMS_LENGTH = 2;
@@ -174,12 +178,14 @@ bool isFoodDotActive = true;
 unsigned long foodBlinkTimestamp = millis();
 
 ProgramState crtProgramState = Greeting;
+// ProgramState crtProgramState = ResetHighscoreSuccessful;
 // ProgramState crtProgramState = Playing;
 // ProgramState crtProgramState = GameOverScreen1;
 // ProgramState crtProgramState = GameOverScreen2;
 
 unsigned long greetingMessageTimestamp = millis();
 unsigned long gameOverScreen1Timestamp = millis();
+unsigned long HSResetSuccessfulMessageTimestamp = millis();
 
 int menuItemIdx = 0;
 int menuSelectedItemIdx = 0;
@@ -388,7 +394,41 @@ void loop() {
       showGameOverScreen2();
       break;
     }
+    case ResetHighscore: {
+      resetHighscoreTable();
+      break;
+    }
+    case ResetHighscoreSuccessful: {
+      showHSResetSuccessfulMessage();
+      break;
+    }
   }
+}
+
+void showHSResetSuccessfulMessage () {  
+  lcd.setCursor(0, 0);
+  lcd.print("HS Records");
+
+  lcd.setCursor(0, 1);
+  lcd.print("Have been reset!");
+
+  if (millis() - HSResetSuccessfulMessageTimestamp > HS_RESET_MESSAGE_TIME) {
+    lcd.clear();
+    
+    crtProgramState = Menu;
+    isJoystickNeutral = true;
+  }
+}
+
+void resetHighscoreTable () {
+  for (int i = 0; i < HIGHSCORE_RECORDS; i++) {
+    strcpy(highscoreData.records[i], "");
+  }
+
+  writeDataToStorage(HIGHSCORE_START_OFFSET, highscoreData);
+  lcd.clear();
+  crtProgramState = ResetHighscoreSuccessful;
+  HSResetSuccessfulMessageTimestamp = millis();
 }
 
 // Screen 1: congrats & show score.
@@ -579,12 +619,16 @@ void showMenu (char* menuItems[], int menuItemsLength) {
 
   // return;
 
-  // int joySwitchValue = !digitalRead(JOY_SW_PIN);
-  // if (menuCrtSwitchValue != joySwitchValue && joySwitchValue) {
-  //   // Serial.println("Clicked!!!!!");
-  // }
+  int joySwitchValue = !digitalRead(JOY_SW_PIN);
+  if (menuCrtSwitchValue != joySwitchValue && joySwitchValue) {
+    // Serial.println("Clicked!!!!!");
+    bool shouldContinue = handleItemClick(menuSelectedItemIdx);
+    if (!shouldContinue) {
+      return;
+    }
+  }
+  menuCrtSwitchValue = joySwitchValue;
 
-  // menuCrtSwitchValue = joySwitchValue;
 
   Directions nextDirection = getDirectionFromJoystick();
   // Serial.println(nextDirection);
@@ -988,6 +1032,25 @@ bool arePositionsEqual (Position& pos1, Position& pos2) {
   return pos1.row == pos2.row && pos1.col == pos2.col;
 }
 
+bool handleItemClick (int itemIdx) {
+  switch (crtProgramState) {
+    case SettingsMenu: {
+      switch (itemIdx) {
+        case 5: {
+          // Reset HS.
+          crtProgramState = ResetHighscore;
+
+          return false;
+        }        
+      }
+      
+      break;
+    }
+  }
+
+  return true;
+}
+
 void handleItemEnter (int itemIdx) {
   switch (crtProgramState) {
     case Menu: {
@@ -1047,7 +1110,6 @@ void handleItemEnter (int itemIdx) {
           break;
         }
       }
-      
       break;
     }
 
