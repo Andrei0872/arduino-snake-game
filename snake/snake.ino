@@ -55,7 +55,7 @@ const byte rs = 9;
 const byte en = 8;
 const byte d4 = 7;
 const byte d5 = 2;
-const byte d6 = 5;
+const byte d6 = 13;
 const byte d7 = 4;
 
 const byte lcdContrastPin = 3;
