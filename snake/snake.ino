@@ -175,10 +175,10 @@ Position foodPos;
 bool isFoodDotActive = true;
 unsigned long foodBlinkTimestamp = millis();
 
-// ProgramState crtProgramState = Greeting;
+ProgramState crtProgramState = Greeting;
 // ProgramState crtProgramState = Playing;
 // ProgramState crtProgramState = GameOverScreen1;
-ProgramState crtProgramState = GameOverScreen2;
+// ProgramState crtProgramState = GameOverScreen2;
 
 unsigned long greetingMessageTimestamp = millis();
 unsigned long gameOverScreen1Timestamp = millis();
@@ -208,7 +208,7 @@ int highscoreSelectedItemIdx = 0;
 int rangeValue = -1;
 bool shouldRenderRangeSettingPixels = true;
 
-int crtScore = 5;
+int crtScore = 0;
 bool hasDisplayedInitialScore = false;
 
 unsigned long updatedSnakeTimestamp = millis();
@@ -259,21 +259,22 @@ void setup() {
   settingsData.LCDBrightness = !!settingsData.LCDBrightness ? settingsData.LCDBrightness : DEFAULT_LCD_BRIGHTNESS_VALUE;
   settingsData.matrixBrightness = !!settingsData.matrixBrightness ? settingsData.matrixBrightness : DEFAULT_MATRIX_BRIGHTNESS_VALUE;
 
-  // Serial.println(settingsData.LCDContrast);
+  Serial.println(settingsData.LCDContrast);
   // Serial.println(settingsData.LCDBrightness);
 
+  // settingsData.LCDContrast = 80;
   analogWrite(lcdContrastPin, settingsData.LCDContrast);
   analogWrite(LCD_BRIGHTNESS_PIN, settingsData.LCDBrightness);
   lc.setIntensity(0, settingsData.matrixBrightness);
 
-  Serial.println(highscoreData.first);
-  Serial.println(highscoreData.second);
-  Serial.println(highscoreData.third);
+  // Serial.println(highscoreData.first);
+  // Serial.println(highscoreData.second);
+  // Serial.println(highscoreData.third);
   // Serial.println(nextOffset);
 
-  // strcpy(highscoreData.first, "aaa:10");
-  // strcpy(highscoreData.second, "bbb:7");
-  // strcpy(highscoreData.third, "ccc:5"); 
+  // strcpy(highscoreData.first, "");
+  // strcpy(highscoreData.second, "");
+  // strcpy(highscoreData.third, ""); 
   // writeDataToStorage(HIGHSCORE_START_OFFSET, highscoreData);
 
   // toggleAllMatrixPoints(true);
@@ -1114,6 +1115,7 @@ void showLCDContrastSettingView () {
   }
 
   Directions nextDirection = getDirectionFromJoystick();
+  // Serial.println(nextDirection);
   if (nextDirection != -1 && nextDirection == UP) {
     handleItemExit(menuSelectedItemIdx);
     lcd.clear();

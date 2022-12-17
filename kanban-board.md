@@ -23,7 +23,7 @@
   <!-- - save data in EEPROM
   - read data from EEPROM
   - update certain highscore -->
-  - update(if needed) after game is done
+  <!-- - update(if needed) after game is done -->
 - Settings:
   - difficulty level(i.e. snake's speed)
   <!-- - LCD contrast. save in EEPROM - 0-255 -->
@@ -73,12 +73,19 @@ refactor: `lcd.print` only when needed, not on every loop iteration
 <!-- - fix: ensure game over when teleporting results in touching the snake's body -->
 <!-- - fix(food): always random when starting the game; the crt problem is that the food is always spawned in the same spot -->
 <!-- - fix: ensure the random food point is not spawned in an occupied position -->
-- fix: move snake glyph at the beginning
+<!-- - fix: move snake glyph at the beginning -->
 
+?
 - add buzzer
 - sound: when eating food
 - sound: when losing
 
+?
 - settings: difficulty level = snake's speed
 
 - refactor: clean code, constants, comments, cruft, simplify switch cases statements etc.
+
+<!-- - quick presentation -->
+- highscore: at least 5 
+- *reset highscores* button
+- format podium number to adjective
