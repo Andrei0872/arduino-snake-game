@@ -58,13 +58,15 @@ const byte d5 = 2;
 const byte d6 = 13;
 const byte d7 = 4;
 
-const byte lcdContrastPin = 3;
+const byte lcdContrastPin = 5;
 
 const short LCD_BRIGHTNESS_PIN = 6;
 
 LiquidCrystal lcd(rs, en, d4, d5, d6, d7);
 
 byte lcdContrast;
+
+const int BUZZER_PIN = 3;
 
 enum ProgramState {
   Greeting,
@@ -171,6 +173,9 @@ const int LCD_BRIGHTNESS_RANGE_STEP = 255 / 16;
 const int MATRIX_BRIGHTNESS_RANGE_STEP = 1;
 
 const int difficultyLevelsValues[3] = { 600, 350, 200 };
+
+const int MENU_BUZZER_FREQ = 1000;
+const int MENU_BUZZER_DURATION = 100;
 
 /* ============================================= */
 
@@ -634,6 +639,8 @@ void showMenu (char* menuItems[], int menuItemsLength) {
 
   menuItemIdx = constrain(menuItemIdx, 0, menuItemsLength - 1);
   lcd.clear();
+
+  tone(BUZZER_PIN, MENU_BUZZER_FREQ, MENU_BUZZER_DURATION);
 
   *menuItemIdxPtr = menuItemIdx;
   *menuSelectedItemIdxPtr = menuSelectedItemIdx;

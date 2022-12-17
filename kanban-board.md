@@ -25,7 +25,7 @@
   - update certain highscore -->
   <!-- - update(if needed) after game is done -->
 - Settings:
-  - difficulty level(i.e. snake's speed)
+  <!-- - difficulty level(i.e. snake's speed) -->
   <!-- - LCD contrast. save in EEPROM - 0-255 -->
   <!-- - LCD brightness. save in EEPROM - 0-255; -->
     <!-- - connect to PWM pin(e.g. 6) -->
@@ -44,7 +44,7 @@
 <!-- 2. control LCD brightness(connect to PWM pin, e.g. 6) -->
 <!-- 3. generic input range component(function) -->
 
-refactor: `lcd.print` only when needed, not on every loop iteration
+<!-- refactor: `lcd.print` only when needed, not on every loop iteration -->
 <!-- perf: make read & write fns to storage generic -->
 
 ---
@@ -76,9 +76,12 @@ refactor: `lcd.print` only when needed, not on every loop iteration
 <!-- - fix: move snake glyph at the beginning -->
 
 ?
-- add buzzer
+<!-- - add buzzer -->
 - sound: when eating food
 - sound: when losing
+<!-- - sound: when navigating TOP & BOTTOM -->
+- sound: when navigating LEFT & RIGHT
+- 
 
 <!-- - settings: difficulty level = snake's speed -->
 
