@@ -422,7 +422,12 @@ void showHSResetSuccessfulMessage () {
 
 void resetHighscoreTable () {
   for (int i = 0; i < HIGHSCORE_RECORDS; i++) {
-    strcpy(highscoreData.records[i], "");
+    if (i == 0) {
+      strcpy(highscoreData.records[i], "");
+      continue;
+    }
+
+    strcpy(highscoreData.records[i], "???");
   }
 
   writeDataToStorage(HIGHSCORE_START_OFFSET, highscoreData);

@@ -89,4 +89,4 @@ refactor: `lcd.print` only when needed, not on every loop iteration
 <!-- - highscore: at least 5  -->
 <!-- - *reset highscores* button -->
 - format podium number to adjective
-- properly format the HS
+<!-- - properly format the HS -->
