@@ -409,17 +409,23 @@ void loop() {
 void showSoundsSettings () {
   const int PADDING_LEFT_AMOUNT = 4;
 
-  lcd.clear();
-  lcd.setCursor(PADDING_LEFT_AMOUNT, 0);
-  lcd.print("YES NOO");
+  if (shouldRenderRangeSettingPixels) {
+    lcd.clear();
+    lcd.setCursor(PADDING_LEFT_AMOUNT, 0);
+    lcd.print("YES NOO");
 
-  lcd.setCursor(PADDING_LEFT_AMOUNT + (isSoundEnabled ? 1 : 5), 1);
-  lcd.write((byte)3);
+    lcd.setCursor(PADDING_LEFT_AMOUNT + (isSoundEnabled ? 1 : 5), 1);
+    lcd.write((byte)3);
+
+    shouldRenderRangeSettingPixels = false;
+  }
 
   Directions nextDirection = getDirectionFromJoystick();
   if (nextDirection != -1 && (nextDirection == DOWN || nextDirection == UP)) {
     isSoundEnabled = !isSoundEnabled;
     toneIfAllowed(BUZZER_PIN, SETTING_SOUND_BUZZER_FREQ, SETTING_SOUND_BUZZER_DURATION);
+
+    shouldRenderRangeSettingPixels = true;
   }
 
   if (nextDirection == LEFT || nextDirection == RIGHT) {
@@ -427,6 +433,9 @@ void showSoundsSettings () {
 
     settingsData.hasSoundsOn = isSoundEnabled;
     writeDataToStorage(SETTINGS_START_OFFSET, settingsData);
+
+    shouldRenderRangeSettingPixels = true;
+    lcd.clear();
   }
 }
 
@@ -621,6 +630,10 @@ void saveUsernameAndScore () {
 
 void shiftHighscoreTable (int updatedPositionIdx) {
   for (int i = HIGHSCORE_RECORDS - 1; i > updatedPositionIdx; i--) {
+    if (!strlen(highscoreData.records[i - 1])) {
+      break;
+    }
+
     strcpy(highscoreData.records[i], highscoreData.records[i - 1]);
   }
 }
@@ -1213,10 +1226,6 @@ void handleItemExit (int itemIdx) {
       writeDataToStorage(SETTINGS_START_OFFSET, settingsData);
 
       crtProgramState = SettingsMenu;
-    }
-
-    default: {
-      return;
     }
   }
 
