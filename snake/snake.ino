@@ -177,6 +177,8 @@ const int difficultyLevelsValues[3] = { 600, 350, 200 };
 const int MENU_BUZZER_FREQ = 1000;
 const int MENU_BUZZER_DURATION = 100;
 
+const int GAME_BUZZER_FREQ = 200;
+const int GAME_BUZZER_DURATION = 100;
 /* ============================================= */
 
 bool isJoystickNeutral = true;
@@ -727,6 +729,8 @@ void checkIfFoodEaten () {
     computeRandomFoodPosition();
     crtScore += (settingsData.difficultyLevel + 1) * 1;
     displayCrtScore();
+
+    tone(BUZZER_PIN, GAME_BUZZER_FREQ, GAME_BUZZER_DURATION);
   }
 }
 
