@@ -80,8 +80,8 @@
 - sound: when eating food
 - sound: when losing
 <!-- - sound: when navigating TOP & BOTTOM -->
-- sound: when navigating LEFT & RIGHT
-- 
+<!-- - sound: when navigating LEFT & RIGHT -->
+- sound: when resetting score
 
 <!-- - settings: difficulty level = snake's speed -->
 

@@ -1102,6 +1102,8 @@ void handleItemEnter (int itemIdx) {
       return;
     }
   }
+
+  tone(BUZZER_PIN, MENU_BUZZER_FREQ, MENU_BUZZER_DURATION);
 }
 
 void handleItemExit (int itemIdx) {
@@ -1148,6 +1150,8 @@ void handleItemExit (int itemIdx) {
       return;
     }
   }
+
+  tone(BUZZER_PIN, MENU_BUZZER_FREQ, MENU_BUZZER_DURATION);
 }
 
 template<typename T> int readDataFromStorage (int offset, T& data) {  
