@@ -86,6 +86,7 @@ refactor: `lcd.print` only when needed, not on every loop iteration
 - refactor: clean code, constants, comments, cruft, simplify switch cases statements etc.
 
 <!-- - quick presentation -->
-- highscore: at least 5 
+<!-- - highscore: at least 5  -->
 - *reset highscores* button
 - format podium number to adjective
+- properly format the HS

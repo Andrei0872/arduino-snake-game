@@ -14,9 +14,7 @@ const int HIGHSCORE_START_OFFSET = 0;
 struct Highscore {
   // 13 = `X. ` occupies 3 bytes and the rest is destined for the actual content.
   
-  char first[13];
-  char second[13];
-  char third[13];
+  char records[5][13];
 } highscoreData;
 
 const int SETTINGS_START_OFFSET = HIGHSCORE_START_OFFSET + sizeof(Highscore);
@@ -154,7 +152,7 @@ const byte barGlyph[8] = {
   B11111,
 };
 
-const int HIGHSCORE_RECORDS = 3;
+const int HIGHSCORE_RECORDS = 5;
 
 const int LCD_CONTRAST_RANGE_STEP = 255 / 16;
 const int LCD_BRIGHTNESS_RANGE_STEP = 255 / 16;
@@ -251,8 +249,12 @@ void setup() {
   lcd.createChar(2, snakeGlyph);
   lcd.createChar(3, barGlyph);
 
+  // writeDummyData();
+
   readDataFromStorage(HIGHSCORE_START_OFFSET, highscoreData);
   readDataFromStorage(SETTINGS_START_OFFSET, settingsData);
+
+  printHighscoreRecords();
 
   // Serial.println(settingsData.LCDBrightness);
   settingsData.LCDContrast = !!settingsData.LCDContrast ? settingsData.LCDContrast : DEFAULT_LCD_CONTRAST_VALUE;
@@ -291,6 +293,31 @@ void setup() {
 
   // saveUsernameAndScore();
   randomSeed(analogRead(0));
+}
+
+void writeDummyData () {
+  strcpy(highscoreData.records[0], "aaa:30");
+  strcpy(highscoreData.records[1], "bbb:25");
+  strcpy(highscoreData.records[2], "ccc:20"); 
+  strcpy(highscoreData.records[3], "ddd:15"); 
+  strcpy(highscoreData.records[4], "eee:10"); 
+  writeDataToStorage(HIGHSCORE_START_OFFSET, highscoreData);
+  
+  settingsData.difficultyLevel = 1;
+  settingsData.hasSoundsOn = true;
+  settingsData.LCDBrightness = 100;
+  settingsData.matrixBrightness = 10;
+  settingsData.LCDContrast = 120;
+  writeDataToStorage(SETTINGS_START_OFFSET, settingsData);
+}
+
+void printHighscoreRecords () {
+  for (int i = 0; i < HIGHSCORE_RECORDS; i++) {
+    Serial.print("Record ");
+    Serial.print(i);
+    Serial.print(" :");
+    Serial.println(highscoreData.records[i]);
+  }
 }
 
 void loop() {
@@ -494,21 +521,7 @@ void modifySelectedUsernameChar (int charStep, char* username) {
 void saveUsernameAndScore () {
   int surpassedPlayerIdx = getHighestSurpassedOnPodium(crtScore);
 
-  char* recordToBeUpdated;
-  switch (surpassedPlayerIdx) {
-    case 0: {
-      recordToBeUpdated = highscoreData.first;
-      break;
-    }
-    case 1: {
-      recordToBeUpdated = highscoreData.second;
-      break;
-    }
-    case 2: {
-      recordToBeUpdated = highscoreData.third;
-      break;
-    }
-  }
+  char* recordToBeUpdated = highscoreData.records[surpassedPlayerIdx];
 
   char scoreStr[9];
   sprintf(scoreStr, "%d", crtScore);
@@ -528,14 +541,8 @@ void saveUsernameAndScore () {
 }
 
 int getHighestSurpassedOnPodium (int crtScore) {
-  char* highscoreValues[] = {
-    strstr(highscoreData.first, ":") + 1,
-    strstr(highscoreData.second, ":") + 1,
-    strstr(highscoreData.third, ":") + 1,
-  };
-
   for (int i = 0; i < HIGHSCORE_RECORDS; i++) {
-    int value = atoi(highscoreValues[i]);
+    int value = atoi(strstr(highscoreData.records[i], ":") + 1);
     if (crtScore > value) {
       return i;
     }
@@ -544,7 +551,7 @@ int getHighestSurpassedOnPodium (int crtScore) {
   return -1;
 }
 
-void showMenu (const char* menuItems[], int menuItemsLength) {
+void showMenu (char* menuItems[], int menuItemsLength) {
   menuItemIdx = *menuItemIdxPtr;
   menuSelectedItemIdx = *menuSelectedItemIdxPtr;
 
@@ -802,7 +809,7 @@ void displayCrtScore () {
 }
 
 void showHighscoreMenu () {
-  if (!strlen(highscoreData.first)) {
+  if (!strlen(highscoreData.records[0])) {
     lcd.setCursor(2, 0);
     lcd.print("Nothing here");
 
@@ -821,14 +828,17 @@ void showHighscoreMenu () {
 
   menuItemIdxPtr = &highscoreItemIdx;
   menuSelectedItemIdxPtr = &highscoreSelectedItemIdx;
-
-  const char* highscoreListItems[] = {
-    highscoreData.first,
-    highscoreData.second,
-    highscoreData.third,
+  
+  // Spent too much time on trying to convert `char[][13]` to `char**`.
+  char* records[] = {
+    highscoreData.records[0],
+    highscoreData.records[1],
+    highscoreData.records[2],
+    highscoreData.records[3],
+    highscoreData.records[4],
   };
-    
-  showMenu(highscoreListItems, HIGHSCORE_RECORDS);
+
+  showMenu(records, HIGHSCORE_RECORDS);
 }
 
 void showAboutSection () {
