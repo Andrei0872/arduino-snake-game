@@ -187,10 +187,6 @@ bool isFoodDotActive = true;
 unsigned long foodBlinkTimestamp = millis();
 
 ProgramState crtProgramState = Greeting;
-// ProgramState crtProgramState = ResetHighscoreSuccessful;
-// ProgramState crtProgramState = Playing;
-// ProgramState crtProgramState = GameOverScreen1;
-// ProgramState crtProgramState = GameOverScreen2;
 
 unsigned long greetingMessageTimestamp = millis();
 unsigned long gameOverScreen1Timestamp = millis();
@@ -241,23 +237,11 @@ void setup() {
   pinMode(JOY_SW_PIN, INPUT_PULLUP);
 
   lc.shutdown(0, false);
-  // lc.setIntensity(0, 2);
   lc.clearDisplay(0);
 
   pinMode(lcdContrastPin, OUTPUT);
   pinMode(LCD_BRIGHTNESS_PIN, OUTPUT);
   lcd.begin(16, 2);
-  // lcdContrast = EEPROM.read(0); // 80
-  // analogWrite(LCD_BRIGHTNESS_PIN, 110);
-  // lcd.print("foobar!");
-  // for (int i = 0; i < 255; i += 2) {
-  //   analogWrite(lcdContrastPin, i);
-  //   lcd.setCursor(9, 0);
-  //   lcd.print(i);
-  //   delay(80);
-  // }
-
-  // analogWrite(d7, 60);
 
   lcd.createChar(0, arrorwDownGlyph);
   lcd.createChar(1, arrowUpGlyph);
@@ -271,15 +255,11 @@ void setup() {
 
   printHighscoreRecords();
 
-  // Serial.println(settingsData.LCDBrightness);
   settingsData.LCDContrast = !!settingsData.LCDContrast ? settingsData.LCDContrast : DEFAULT_LCD_CONTRAST_VALUE;
   settingsData.LCDBrightness = !!settingsData.LCDBrightness ? settingsData.LCDBrightness : DEFAULT_LCD_BRIGHTNESS_VALUE;
   settingsData.matrixBrightness = !!settingsData.matrixBrightness ? settingsData.matrixBrightness : DEFAULT_MATRIX_BRIGHTNESS_VALUE;
 
-  Serial.println(settingsData.LCDContrast);
-  // Serial.println(settingsData.LCDBrightness);
 
-  // settingsData.LCDContrast = 80;
   analogWrite(lcdContrastPin, settingsData.LCDContrast);
   analogWrite(LCD_BRIGHTNESS_PIN, settingsData.LCDBrightness);
   lc.setIntensity(0, settingsData.matrixBrightness);
@@ -287,31 +267,12 @@ void setup() {
 
   Serial.println(updateSnakeDotsInterval);
 
-  // Serial.println(highscoreData.first);
-  // Serial.println(highscoreData.second);
-  // Serial.println(highscoreData.third);
-  // Serial.println(nextOffset);
-
-  // strcpy(highscoreData.first, "");
-  // strcpy(highscoreData.second, "");
-  // strcpy(highscoreData.third, ""); 
-  // writeDataToStorage(HIGHSCORE_START_OFFSET, highscoreData);
-
-  // toggleAllMatrixPoints(true);
-
   crtPos.crtDirection = -1;
-  // Position head = crtPos;
   snakeDots[snakeDotsCount++] = &crtPos;
 
   memset(turningPoints, -1, sizeof(turningPoints));
-  // Serial.println(getHighestSurpassedOnPodium(8));
-  // Serial.println(strlen(username));
-  // Serial.println(sizeof(username));
-  // Serial.println(username);
 
-  // saveUsernameAndScore();
   randomSeed(analogRead(0));
-
 }
 
 void writeDummyData () {
@@ -394,7 +355,6 @@ void loop() {
     }
     case SettingMatrixrightness: {
       rangeValue = rangeValue != -1 ? rangeValue : settingsData.matrixBrightness;
-      // TODO: might not need to do this on every iteration.
       toggleAllMatrixPoints(true);
       showMatrixBrightnessSettingView();
       break;
@@ -458,9 +418,6 @@ void resetHighscoreTable () {
   HSResetSuccessfulMessageTimestamp = millis();
 }
 
-// Screen 1: congrats & show score.
-// Screen 2(if 1, 2 or 3): type in username
-  // when leaving: save username along with HS   
 void showGameOverScreen1 () {
   lcd.setCursor(0, 0);
   lcd.print("Congratulations");
@@ -575,7 +532,6 @@ void modifySelectedUsernameChar (int charStep, char* username) {
   char usernameCh = username[selectedUsernameCharIdx];
 
   usernameCh += charStep; 
-  // TODO: avoid magic numbers!
   if (usernameCh > 90) {
     usernameCh = 65;
   } else if (usernameCh < 65) {
@@ -598,12 +554,8 @@ void saveUsernameAndScore () {
   strcpy(newRecord + strlen(newRecord), ":");   
   strcpy(newRecord + strlen(newRecord), scoreStr);
 
-  // Serial.println(newRecord);
   strcpy(recordToBeUpdated, newRecord);
   
-  // Serial.println(highscoreData.first);
-  // Serial.println(highscoreData.second);
-  // Serial.println(highscoreData.third);
   writeDataToStorage(HIGHSCORE_START_OFFSET, highscoreData);
 }
 
@@ -644,11 +596,8 @@ void showMenu (char* menuItems[], int menuItemsLength) {
   lcd.setCursor(strlen(menuItems[menuSelectedItemIdx]), selectedLCDLine);
   lcd.write((byte)2);
 
-  // return;
-
   int joySwitchValue = !digitalRead(JOY_SW_PIN);
   if (menuCrtSwitchValue != joySwitchValue && joySwitchValue) {
-    // Serial.println("Clicked!!!!!");
     bool shouldContinue = handleItemClick(menuSelectedItemIdx);
     if (!shouldContinue) {
       return;
@@ -658,7 +607,6 @@ void showMenu (char* menuItems[], int menuItemsLength) {
 
 
   Directions nextDirection = getDirectionFromJoystick();
-  // Serial.println(nextDirection);
   if (nextDirection != -1 && nextDirection == DOWN) {
     handleItemEnter(menuSelectedItemIdx);
     lcd.clear();
@@ -708,7 +656,6 @@ void playGame () {
   updateSnakeDots();
   checkIfFoodEaten();
   
-  // TODO: refactor `isGameOver()`.
   for (int i = 1; i < snakeDotsCount; i++) {
     Position& snakeDot = *snakeDots[i];
 
@@ -808,7 +755,6 @@ void addToTail () {
   snakeDots[snakeDotsCount++] = newTail;
 }
 
-// Helper fn.
 void printPos (Position& pos) {
   Serial.print("col: ");
   Serial.println(pos.col);
@@ -1228,7 +1174,6 @@ void showLCDContrastSettingView () {
   }
 
   Directions nextDirection = getDirectionFromJoystick();
-  // Serial.println(nextDirection);
   if (nextDirection != -1 && nextDirection == UP) {
     handleItemExit(menuSelectedItemIdx);
     lcd.clear();
