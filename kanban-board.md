@@ -17,20 +17,20 @@
 <!-- - show menu with options -->
 <!-- - Play game. on enter -> start -->
 <!-- - switch from parent menu to child menu -->
-- Highscore.
+<!-- - Highscore. -->
   <!-- - fix: display highscore -->
   <!-- - handle the case where there are no highscores: display message -->
   <!-- - save data in EEPROM
   - read data from EEPROM
   - update certain highscore -->
   <!-- - update(if needed) after game is done -->
-- Settings:
+<!-- - Settings. -->
   <!-- - difficulty level(i.e. snake's speed) -->
   <!-- - LCD contrast. save in EEPROM - 0-255 -->
   <!-- - LCD brightness. save in EEPROM - 0-255; -->
-    <!-- - connect to PWM pin(e.g. 6) -->
+  <!-- - connect to PWM pin(e.g. 6) -->
   <!-- - Matrix brightness. save in EEPROM - 0-15 -->
-  - Sounds on or off. save in EEPROM
+  <!-- - Sounds on or off. save in EEPROM -->
   <!-- **note**: you can use something similar to a range input -->
 <!-- - About: name + GH link -->
 <!-- - How to play: it's snake, it doesn't need further explications -->
@@ -75,7 +75,7 @@
 <!-- - fix: ensure the random food point is not spawned in an occupied position -->
 <!-- - fix: move snake glyph at the beginning -->
 
-?
+<!-- ? -->
 <!-- - add buzzer -->
 <!-- - sound: when eating food -->
 <!-- - sound: when losing -->

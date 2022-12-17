@@ -84,6 +84,7 @@ enum ProgramState {
   ResetHighscore,
   ResetHighscoreSuccessful,
   DifficultyLevel,
+  SettingSounds,
 };
 
 const int GREETING_MESSAGE_TIME = 2500;
@@ -186,6 +187,9 @@ const int GAME_END_BUZZER_DURATION = 1000;
 const int RESET_HS_BUZZER_FREQ = 1500;
 const int RESET_HS_BUZZER_DURATION = 1000;
 
+const int SETTING_SOUND_BUZZER_FREQ = 800;
+const int SETTING_SOUND_BUZZER_DURATION = 100;
+
 /* ============================================= */
 
 bool isJoystickNeutral = true;
@@ -243,6 +247,7 @@ Directions turningPoints[MATRIX_SIZE][MATRIX_SIZE];
 char username[4] = "AAA";
 int selectedUsernameCharIdx = 0;
 
+bool isSoundEnabled;
 /* ============================================= */
 
 void setup() {
@@ -273,11 +278,12 @@ void setup() {
   settingsData.LCDBrightness = !!settingsData.LCDBrightness ? settingsData.LCDBrightness : DEFAULT_LCD_BRIGHTNESS_VALUE;
   settingsData.matrixBrightness = !!settingsData.matrixBrightness ? settingsData.matrixBrightness : DEFAULT_MATRIX_BRIGHTNESS_VALUE;
 
-
   analogWrite(lcdContrastPin, settingsData.LCDContrast);
   analogWrite(LCD_BRIGHTNESS_PIN, settingsData.LCDBrightness);
   lc.setIntensity(0, settingsData.matrixBrightness);
   updateSnakeDotsInterval = difficultyLevelsValues[settingsData.difficultyLevel];
+  isSoundEnabled = settingsData.hasSoundsOn;
+
 
   Serial.println(updateSnakeDotsInterval);
 
@@ -393,11 +399,44 @@ void loop() {
       showDifficultyLevels();
       break;
     }
+    case SettingSounds: {
+      showSoundsSettings();
+      break;
+    }
+  }
+}
+
+void showSoundsSettings () {
+  const int PADDING_LEFT_AMOUNT = 4;
+
+  lcd.clear();
+  lcd.setCursor(PADDING_LEFT_AMOUNT, 0);
+  lcd.print("YES NOO");
+
+  lcd.setCursor(PADDING_LEFT_AMOUNT + (isSoundEnabled ? 1 : 5), 1);
+  lcd.write((byte)3);
+
+  Directions nextDirection = getDirectionFromJoystick();
+  if (nextDirection != -1 && (nextDirection == DOWN || nextDirection == UP)) {
+    isSoundEnabled = !isSoundEnabled;
+    toneIfAllowed(BUZZER_PIN, SETTING_SOUND_BUZZER_FREQ, SETTING_SOUND_BUZZER_DURATION);
+  }
+
+  if (nextDirection == LEFT || nextDirection == RIGHT) {
+    handleItemExit(-1);
+
+    settingsData.hasSoundsOn = isSoundEnabled;
+    writeDataToStorage(SETTINGS_START_OFFSET, settingsData);
+  }
+}
+
+void toneIfAllowed (uint8_t pin, unsigned int frequency, unsigned long duration) {
+  if (isSoundEnabled) {
+    tone(pin, frequency, duration);
   }
 }
 
 void showDifficultyLevels () {
-
   showMenu(difficultyLevels, DIFFICULTY_LEVELS_LENGTH); 
 }
 
@@ -431,7 +470,7 @@ void resetHighscoreTable () {
   crtProgramState = ResetHighscoreSuccessful;
   HSResetSuccessfulMessageTimestamp = millis();
 
-  tone(BUZZER_PIN, RESET_HS_BUZZER_FREQ, RESET_HS_BUZZER_DURATION);
+  toneIfAllowed(BUZZER_PIN, RESET_HS_BUZZER_FREQ, RESET_HS_BUZZER_DURATION);
 }
 
 void showGameOverScreen1 () {
@@ -619,6 +658,7 @@ void showMenu (char* menuItems[], int menuItemsLength) {
       return;
     }
   }
+
   menuCrtSwitchValue = joySwitchValue;
 
 
@@ -651,7 +691,7 @@ void showMenu (char* menuItems[], int menuItemsLength) {
   menuItemIdx = constrain(menuItemIdx, 0, menuItemsLength - 1);
   lcd.clear();
 
-  tone(BUZZER_PIN, MENU_BUZZER_FREQ, MENU_BUZZER_DURATION);
+  toneIfAllowed(BUZZER_PIN, MENU_BUZZER_FREQ, MENU_BUZZER_DURATION);
 
   *menuItemIdxPtr = menuItemIdx;
   *menuSelectedItemIdxPtr = menuSelectedItemIdx;
@@ -706,7 +746,7 @@ void gameOverHandler () {
   crtProgramState = GameOverScreen1;
   gameOverScreen1Timestamp = millis();
 
-  tone(BUZZER_PIN, GAME_END_BUZZER_FREQ, GAME_END_BUZZER_DURATION);
+  toneIfAllowed(BUZZER_PIN, GAME_END_BUZZER_FREQ, GAME_END_BUZZER_DURATION);
 }
 
 bool isGameOver (Position& crtPos, int nextDirection) {
@@ -739,7 +779,7 @@ void checkIfFoodEaten () {
     crtScore += (settingsData.difficultyLevel + 1) * 1;
     displayCrtScore();
 
-    tone(BUZZER_PIN, GAME_BUZZER_FREQ, GAME_BUZZER_DURATION);
+    toneIfAllowed(BUZZER_PIN, GAME_BUZZER_FREQ, GAME_BUZZER_DURATION);
   }
 }
 
@@ -1107,6 +1147,10 @@ void handleItemEnter (int itemIdx) {
           crtProgramState = DifficultyLevel;
           break;
         }
+        case 4: {
+          // Sounds.
+          crtProgramState = SettingSounds;
+        }
       }
       break;
     }
@@ -1116,7 +1160,7 @@ void handleItemEnter (int itemIdx) {
     }
   }
 
-  tone(BUZZER_PIN, MENU_BUZZER_FREQ, MENU_BUZZER_DURATION);
+  toneIfAllowed(BUZZER_PIN, MENU_BUZZER_FREQ, MENU_BUZZER_DURATION);
 }
 
 void handleItemExit (int itemIdx) {
@@ -1145,7 +1189,8 @@ void handleItemExit (int itemIdx) {
 
     case SettingLCDContrast:
     case SettingLCDBrightness:
-    case SettingMatrixrightness: {
+    case SettingMatrixrightness:
+    case SettingSounds: {
       crtProgramState = SettingsMenu;
       break;
     }
@@ -1164,7 +1209,7 @@ void handleItemExit (int itemIdx) {
     }
   }
 
-  tone(BUZZER_PIN, MENU_BUZZER_FREQ, MENU_BUZZER_DURATION);
+  toneIfAllowed(BUZZER_PIN, MENU_BUZZER_FREQ, MENU_BUZZER_DURATION);
 }
 
 template<typename T> int readDataFromStorage (int offset, T& data) {  
