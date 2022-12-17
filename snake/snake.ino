@@ -183,6 +183,9 @@ const int GAME_BUZZER_DURATION = 100;
 const int GAME_END_BUZZER_FREQ = 2000;
 const int GAME_END_BUZZER_DURATION = 1000;
 
+const int RESET_HS_BUZZER_FREQ = 1500;
+const int RESET_HS_BUZZER_DURATION = 1000;
+
 /* ============================================= */
 
 bool isJoystickNeutral = true;
@@ -427,6 +430,8 @@ void resetHighscoreTable () {
   lcd.clear();
   crtProgramState = ResetHighscoreSuccessful;
   HSResetSuccessfulMessageTimestamp = millis();
+
+  tone(BUZZER_PIN, RESET_HS_BUZZER_FREQ, RESET_HS_BUZZER_DURATION);
 }
 
 void showGameOverScreen1 () {

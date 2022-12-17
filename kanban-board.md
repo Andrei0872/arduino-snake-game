@@ -78,14 +78,14 @@
 ?
 <!-- - add buzzer -->
 <!-- - sound: when eating food -->
-- sound: when losing
+<!-- - sound: when losing -->
 <!-- - sound: when navigating TOP & BOTTOM -->
 <!-- - sound: when navigating LEFT & RIGHT -->
-- sound: when resetting score
+<!-- - sound: when resetting score -->
 
 <!-- - settings: difficulty level = snake's speed -->
 
-- refactor: clean code, constants, comments, cruft, simplify switch cases statements etc.
+<!-- - refactor: clean code, constants, comments, cruft, simplify switch cases statements etc. -->
 
 <!-- - quick presentation -->
 <!-- - highscore: at least 5  -->
