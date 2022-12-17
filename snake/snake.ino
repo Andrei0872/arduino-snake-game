@@ -602,6 +602,7 @@ void modifySelectedUsernameChar (int charStep, char* username) {
 
 void saveUsernameAndScore () {
   int surpassedPlayerIdx = getHighestSurpassedOnPodium(crtScore);
+  shiftHighscoreTable(surpassedPlayerIdx);
 
   char* recordToBeUpdated = highscoreData.records[surpassedPlayerIdx];
 
@@ -616,6 +617,12 @@ void saveUsernameAndScore () {
   strcpy(recordToBeUpdated, newRecord);
   
   writeDataToStorage(HIGHSCORE_START_OFFSET, highscoreData);
+}
+
+void shiftHighscoreTable (int updatedPositionIdx) {
+  for (int i = HIGHSCORE_RECORDS - 1; i > updatedPositionIdx; i--) {
+    strcpy(highscoreData.records[i], highscoreData.records[i - 1]);
+  }
 }
 
 int getHighestSurpassedOnPodium (int crtScore) {
