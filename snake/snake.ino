@@ -4,7 +4,7 @@
 
 const int JOY_X_PIN = A0;
 const int JOY_Y_PIN = A1;
-const int JOY_SW_PIN = 13;
+const int JOY_SW_PIN = 1;
 const int JOY_LEFT_TRESHOLD = 400;
 const int JOY_RIGHT_TRESHOLD = 600;
 const int JOY_TOP_TRESHOLD = 400;
