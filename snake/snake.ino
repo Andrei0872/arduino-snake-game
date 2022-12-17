@@ -179,6 +179,10 @@ const int MENU_BUZZER_DURATION = 100;
 
 const int GAME_BUZZER_FREQ = 200;
 const int GAME_BUZZER_DURATION = 100;
+
+const int GAME_END_BUZZER_FREQ = 2000;
+const int GAME_END_BUZZER_DURATION = 1000;
+
 /* ============================================= */
 
 bool isJoystickNeutral = true;
@@ -693,11 +697,11 @@ void playGame () {
 }
 
 void gameOverHandler () {
-  Serial.println("GAME OVER!");
-      
   lcd.clear();
   crtProgramState = GameOverScreen1;
   gameOverScreen1Timestamp = millis();
+
+  tone(BUZZER_PIN, GAME_END_BUZZER_FREQ, GAME_END_BUZZER_DURATION);
 }
 
 bool isGameOver (Position& crtPos, int nextDirection) {
