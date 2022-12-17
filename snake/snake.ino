@@ -509,7 +509,11 @@ void showGameOverScreen2 () {
   lcd.clear();
   lcd.setCursor(0, 1);
   lcd.print(usernameStr);
-  
+  lcd.setCursor(0, 0);
+  lcd.print("On ");
+  lcd.print(surpassedPlayerIdx + 1);
+  lcd.print("!");
+
   getUsernameFromUser(strlen(usernameStr));
 }
 
