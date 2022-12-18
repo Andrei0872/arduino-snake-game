@@ -10,7 +10,8 @@
   - [Interesting Challenges](#interesting-challenges)
     - [The Snake Game](#the-snake-game)
     - [Working with pointers](#working-with-pointers)
-    - [Writing reusable and reliable code](#writing-reusable-and-reliable-code)
+    - [Writing simple, reusable and reliable code](#writing-simple-reusable-and-reliable-code)
+      - [`showMenu` used everywhere](#showmenu-used-everywhere)
 
 ## Task requirements
 
@@ -100,4 +101,45 @@ Position* snakeDots[MATRIX_SIZE * MATRIX_SIZE];
 Position& pos = *snakeDots[i];
 ```
 
-### Writing reusable and reliable code
+### Writing simple, reusable and reliable code
+
+I've been keeping my focus on this constantly while working on this project. It is far from perfect, but I tried my best to keep things as straightforward as possible.
+
+#### `showMenu` used everywhere
+
+Whenever a (scrollable) menu is displayed on the LCD, the `showMenu()` function is responsible for that. I've used it for showing the main menu, the settings menu, the highscore records and more:
+
+```c
+/* ... */
+showMenu(menuItems, MENU_ITEMS_LENGTH);
+/* ... */
+showMenu(settingsMenuItems, SETTINGS_MENU_ITEMS_LENGTH);
+/* ... */
+showMenu(difficultyLevels, DIFFICULTY_LEVELS_LENGTH); 
+/* ... */
+```
+
+One language feature that was crucial for this function was the use of **pointers**. Each menu, if scrollable, needs a pair of indexes, one for keeping track of the currently selected item and the other for keeping track of the *scrollable view*. Here is how pointers came handy:
+
+```c
+// Example: the Settings menu.
+
+menuItemIdxPtr = &settingsMenuItemIdx;
+menuSelectedItemIdxPtr = &settingsMenuSelectedItemIdx;
+
+showMenu(settingsMenuItems, SETTINGS_MENU_ITEMS_LENGTH);
+
+/* ... */
+
+void showMenu (char* menuItems[], int menuItemsLength) {
+  // Getting the actual values here.
+  menuItemIdx = *menuItemIdxPtr;
+  menuSelectedItemIdx = *menuSelectedItemIdxPtr;
+
+  /* ... indexes logic, getting input from joystick, etc. ... */
+
+  // Updating the pointers with the new values!
+  *menuItemIdxPtr = menuItemIdx;
+  *menuSelectedItemIdxPtr = menuSelectedItemIdx;
+}
+```
