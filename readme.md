@@ -13,6 +13,7 @@
     - [Writing simple, reusable and reliable code](#writing-simple-reusable-and-reliable-code)
       - [`showMenu` used everywhere](#showmenu-used-everywhere)
       - [Getting input from joystick](#getting-input-from-joystick)
+      - [Writing to and reading from EEPROM](#writing-to-and-reading-from-eeprom)
 
 ## Task requirements
 
@@ -150,3 +151,36 @@ void showMenu (char* menuItems[], int menuItemsLength) {
 This was one of the most challenging parts, but luckily, I got it right within the first attempts.
 
 The `getDirectionFromJoystick()` has throttling included, meaning that it doesn't return the same direction(i.e. `UP`, `DOWN`, `LEFT`, `RIGHT`) unless the handle reaches again the *neutral* state.
+
+#### Writing to and reading from EEPROM
+
+Initially, I thought I would store all the data as a big string with some *cleverly* chosen separators. I'm glad that I ended up with a different approach: using **structs**:
+
+```c
+struct Highscore {
+  char records[5][13];
+} highscoreData;
+
+const int SETTINGS_START_OFFSET = HIGHSCORE_START_OFFSET + sizeof(Highscore);
+/* ... */
+struct Settings {
+  byte difficultyLevel;
+  byte LCDContrast = DEFAULT_LCD_CONTRAST_VALUE;
+  byte LCDBrightness = DEFAULT_LCD_BRIGHTNESS_VALUE;
+  byte matrixBrightness = DEFAULT_MATRIX_BRIGHTNESS_VALUE;
+  bool hasSoundsOn;
+} settingsData;
+```
+
+Now, writing to and reading from `EEPROM` is as simple as rightly calling `EEPROM.get` and `EEPROM.put`, respectively.
+
+Moreover, if I'd want to store more data to `EEPROM`, I'd simply do:
+
+```c
+const int OTHER_CONFIGS_START_OFFSET = SETTINGS_START_OFFSET + sizeof(Settings);
+struct OtherConfigs {
+  char config1[10];
+  int config2;
+  byte config3;
+}
+```
