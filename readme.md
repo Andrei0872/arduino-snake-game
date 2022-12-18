@@ -10,10 +10,10 @@
   - [Interesting Challenges](#interesting-challenges)
     - [The Snake Game](#the-snake-game)
     - [Working with pointers](#working-with-pointers)
-    - [Writing simple, reusable and reliable code](#writing-simple-reusable-and-reliable-code)
-      - [`showMenu` used everywhere](#showmenu-used-everywhere)
-      - [Getting input from joystick](#getting-input-from-joystick)
-      - [Writing to and reading from EEPROM](#writing-to-and-reading-from-eeprom)
+    - [`showMenu` used everywhere](#showmenu-used-everywhere)
+    - [Getting input from joystick](#getting-input-from-joystick)
+    - [Writing to and reading from EEPROM](#writing-to-and-reading-from-eeprom)
+    - [Using templates](#using-templates)
 
 ## Task requirements
 
@@ -52,7 +52,7 @@ The video showcasing the functionality can be found [here](https://youtu.be/osQ7
 
 Although it's a simple game, there were a few challenges when it came to its implementation. The building blocks are the following:
 
-```c
+```cpp
 enum Directions {
   LEFT = 0,
   RIGHT = 1,
@@ -71,7 +71,7 @@ Part of the reason as to why `turningPoints` is needed is that the snake will co
 
 Before determining the next position on the matrix of each snake dot, `applyTurningPoints()` is called:
 
-```c
+```cpp
 void applyTurningPoints () {
   for (int i = 0; i < snakeDotsCount; i++) {
     Position& pos = *snakeDots[i];
@@ -95,7 +95,7 @@ The concept of pointers never seemed daunting to me, but I could never understan
 
 I feel proud of being able to utilize such syntax:
 
-```c
+```cpp
 Position* snakeDots[MATRIX_SIZE * MATRIX_SIZE];
 
 /* ... */
@@ -103,15 +103,11 @@ Position* snakeDots[MATRIX_SIZE * MATRIX_SIZE];
 Position& pos = *snakeDots[i];
 ```
 
-### Writing simple, reusable and reliable code
-
-I've been keeping my focus on this constantly while working on this project. It is far from perfect, but I tried my best to keep things as straightforward as possible.
-
-#### `showMenu` used everywhere
+### `showMenu` used everywhere
 
 Whenever a (scrollable) menu is displayed on the LCD, the `showMenu()` function is responsible for that. I've used it for showing the main menu, the settings menu, the highscore records and more:
 
-```c
+```cpp
 /* ... */
 showMenu(menuItems, MENU_ITEMS_LENGTH);
 /* ... */
@@ -123,7 +119,7 @@ showMenu(difficultyLevels, DIFFICULTY_LEVELS_LENGTH);
 
 One language feature that was crucial for this function was the use of **pointers**. Each menu, if scrollable, needs a pair of indexes, one for keeping track of the currently selected item and the other for keeping track of the *scrollable view*. Here is how pointers came handy:
 
-```c
+```cpp
 // Example: the Settings menu.
 
 menuItemIdxPtr = &settingsMenuItemIdx;
@@ -146,17 +142,17 @@ void showMenu (char* menuItems[], int menuItemsLength) {
 }
 ```
 
-#### Getting input from joystick
+### Getting input from joystick
 
 This was one of the most challenging parts, but luckily, I got it right within the first attempts.
 
 The `getDirectionFromJoystick()` has throttling included, meaning that it doesn't return the same direction(i.e. `UP`, `DOWN`, `LEFT`, `RIGHT`) unless the handle reaches again the *neutral* state.
 
-#### Writing to and reading from EEPROM
+### Writing to and reading from EEPROM
 
 Initially, I thought I would store all the data as a big string with some *cleverly* chosen separators. I'm glad that I ended up with a different approach: using **structs**:
 
-```c
+```cpp
 struct Highscore {
   char records[5][13];
 } highscoreData;
@@ -176,11 +172,30 @@ Now, writing to and reading from `EEPROM` is as simple as rightly calling `EEPRO
 
 Moreover, if I'd want to store more data to `EEPROM`, I'd simply do:
 
-```c
+```cpp
 const int OTHER_CONFIGS_START_OFFSET = SETTINGS_START_OFFSET + sizeof(Settings);
 struct OtherConfigs {
   char config1[10];
   int config2;
   byte config3;
+}
+```
+
+### Using templates
+
+Although I'm familiar with the concept(`TypeScript` has something similar, called [*generics*](https://www.typescriptlang.org/docs/handbook/2/generics.html)), I never really got the change to use them in C/C++.
+
+Here's how I used them and I think they are perfectly suited for this case:
+
+```cpp
+template<typename T> int readDataFromStorage (int offset, T& data) {  
+  EEPROM.get(offset, data);
+
+  return offset + sizeof(data);
+}
+template<typename T> int writeDataToStorage (int offset, T& data) {
+  EEPROM.put(offset, data);
+
+  return offset + sizeof(data);
 }
 ```
