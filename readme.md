@@ -65,13 +65,20 @@ int snakeDotsCount = 0;
 Directions turningPoints[MATRIX_SIZE][MATRIX_SIZE];
 ```
 
-`turningPoints` will keep track of the **current direction** of each snake dot. A snake, especially if it is comprised of multiple points, it can turn many times. Finding out the direction of each point can be achieved by using `turningPoints[x][y]`.
+`turningPoints` will keep track of the **current direction** of each snake dot. A snake, especially if it is comprised of multiple points, can turn many times. Finding out the direction of each point can be achieved by using `turningPoints[x][y]`.
 
 Part of the reason as to why `turningPoints` is needed is that the snake will continuously move in one certain direction, once the game has started. However, not all of the snake's dots will follow the same direction, mainly because the snake will most likely turn a few times. So, we must take into account the turning points as well when the snake is moving.
 
 Before determining the next position on the matrix of each snake dot, `applyTurningPoints()` is called:
 
 ```cpp
+struct Position {
+  int row, col;
+  int crtDirection;
+};
+
+/* ... */
+
 void applyTurningPoints () {
   for (int i = 0; i < snakeDotsCount; i++) {
     Position& pos = *snakeDots[i];
@@ -117,7 +124,9 @@ showMenu(difficultyLevels, DIFFICULTY_LEVELS_LENGTH);
 /* ... */
 ```
 
-One language feature that was crucial for this function was the use of **pointers**. Each menu, if scrollable, needs a pair of indexes, one for keeping track of the currently selected item and the other for keeping track of the *scrollable view*. Here is how pointers came handy:
+One language feature that was crucial for this function was the use of **pointers**. Each menu, if scrollable, needs a pair of indexes, one for keeping track of the currently selected item and the other for keeping track of the *scrollable view*(e.g. if there are 5 menu items and only 2 visible works, there will be 3 views - (1, 2), (3, 4), (5,)).
+
+Here is how pointers came handy:
 
 ```cpp
 // Example: the Settings menu.
@@ -168,7 +177,7 @@ struct Settings {
 } settingsData;
 ```
 
-Now, writing to and reading from `EEPROM` is as simple as rightly calling `EEPROM.get` and `EEPROM.put`, respectively.
+Now, writing to and reading from `EEPROM` is as simple as rightly calling `EEPROM.put` and `EEPROM.get`, respectively.
 
 Moreover, if I'd want to store more data to `EEPROM`, I'd simply do:
 
@@ -183,7 +192,7 @@ struct OtherConfigs {
 
 ### Using templates
 
-Although I'm familiar with the concept(`TypeScript` has something similar, called [*generics*](https://www.typescriptlang.org/docs/handbook/2/generics.html)), I never really got the change to use them in C/C++.
+Although I'm familiar with the concept(`TypeScript` has something similar, called [*generics*](https://www.typescriptlang.org/docs/handbook/2/generics.html)), I never really got the chance to use them in C/C++.
 
 Here's how I used them and I think they are perfectly suited for this case:
 
