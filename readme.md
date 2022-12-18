@@ -12,6 +12,7 @@
     - [Working with pointers](#working-with-pointers)
     - [Writing simple, reusable and reliable code](#writing-simple-reusable-and-reliable-code)
       - [`showMenu` used everywhere](#showmenu-used-everywhere)
+      - [Getting input from joystick](#getting-input-from-joystick)
 
 ## Task requirements
 
@@ -143,3 +144,9 @@ void showMenu (char* menuItems[], int menuItemsLength) {
   *menuSelectedItemIdxPtr = menuSelectedItemIdx;
 }
 ```
+
+#### Getting input from joystick
+
+This was one of the most challenging parts, but luckily, I got it right within the first attempts.
+
+The `getDirectionFromJoystick()` has throttling included, meaning that it doesn't return the same direction(i.e. `UP`, `DOWN`, `LEFT`, `RIGHT`) unless the handle reaches again the *neutral* state.
