@@ -88,4 +88,16 @@ void applyTurningPoints () {
 
 ### Working with pointers
 
+The concept of pointers never seemed daunting to me, but I could never understand them properly. I'm very glad that, after completing this project, I feel more comfortable working pointers.
+
+I feel proud of being able to utilize such syntax:
+
+```c
+Position* snakeDots[MATRIX_SIZE * MATRIX_SIZE];
+
+/* ... */
+
+Position& pos = *snakeDots[i];
+```
+
 ### Writing reusable and reliable code
